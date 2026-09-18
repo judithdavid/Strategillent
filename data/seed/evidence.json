@@ -1,0 +1,641 @@
+[
+  {
+    "id": "E001",
+    "domain": "AI",
+    "title": "AI can improve financial-service quality and efficiency",
+    "source_name": "Bank for International Settlements",
+    "source_type": "international_financial_institution",
+    "publication_date": "2025-07-28",
+    "url": "https://www.bis.org/speeches/20250728-artificial-intelligence-finance",
+    "claim": "AI can improve personalised financial advice, credit-risk assessment, customer support and claims handling.",
+    "evidence": "BIS describes AI as having substantial potential to improve quality and efficiency across these financial-service activities.",
+    "strategic_implication": "FinNova should evaluate AI across risk, lending and customer operations rather than treating AI as only a chatbot capability.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "ai",
+      "credit-risk",
+      "customer-support",
+      "operations"
+    ]
+  },
+  {
+    "id": "E002",
+    "domain": "AI",
+    "title": "AI can strengthen fraud detection and transaction security",
+    "source_name": "Bank for International Settlements",
+    "source_type": "international_financial_institution",
+    "publication_date": "2025-07-28",
+    "url": "https://www.bis.org/speeches/20250728-artificial-intelligence-finance",
+    "claim": "AI can strengthen fraud detection and improve transaction security.",
+    "evidence": "BIS explicitly identifies fraud detection and transaction security among potential benefits of AI in finance.",
+    "strategic_implication": "Fraud prevention is a credible high-value AI transformation candidate for FinNova.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "ai",
+      "fraud",
+      "payments",
+      "security"
+    ]
+  },
+  {
+    "id": "E003",
+    "domain": "AI",
+    "title": "AI adoption is expanding across financial-sector functions",
+    "source_name": "Bank for International Settlements",
+    "source_type": "international_financial_institution",
+    "publication_date": "2025-11-14",
+    "url": "https://www.bis.org/speeches/20251114-ai-and-central-banking",
+    "claim": "Financial firms are adopting AI in internal productivity, customer-facing functions, credit decision support and fraud detection.",
+    "evidence": "BIS reports concentrated adoption in text analysis, classification, information search and customer-facing functions, alongside experimentation in credit decision support and fraud detection.",
+    "strategic_implication": "FinNova's transformation roadmap should distinguish low-risk productivity use cases from higher-risk core decisioning use cases.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "ai-adoption",
+      "operations",
+      "credit",
+      "fraud"
+    ]
+  },
+  {
+    "id": "E004",
+    "domain": "AI",
+    "title": "Generative AI can support document analysis and customer engagement",
+    "source_name": "Bank for International Settlements",
+    "source_type": "international_financial_institution",
+    "publication_date": "2025-04-09",
+    "url": "https://www.bis.org/speeches/20250409-ai-fintechs-and-banks",
+    "claim": "Generative AI creates opportunities for document analysis and customer-service assistance.",
+    "evidence": "BIS discusses GenAI for broader data analysis, document analysis for credit underwriting and AI-powered customer-service chatbots.",
+    "strategic_implication": "FinNova could use GenAI for document-heavy lending workflows and support augmentation before deploying autonomous decisions.",
+    "confidence": 5,
+    "relevance": 4,
+    "tags": [
+      "genai",
+      "documents",
+      "lending",
+      "customer-service"
+    ]
+  },
+  {
+    "id": "E005",
+    "domain": "AI",
+    "title": "AI can support operational efficiency and compliance",
+    "source_name": "Bank for International Settlements",
+    "source_type": "international_financial_institution",
+    "publication_date": "2025-10-13",
+    "url": "https://www.bis.org/speeches/20251013-responsible-artificial-intelligence-ai-balancing-innovation-financial-stability",
+    "claim": "AI can improve operational efficiency in back-office processes, KYC and loan processing.",
+    "evidence": "RBI Deputy Governor T Rabi Sankar's BIS speech identifies operational efficiency, KYC, loan processing and customer support as AI opportunities.",
+    "strategic_implication": "FinNova should consider process automation as a measurable transformation outcome.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "ai",
+      "kyc",
+      "operations",
+      "loan-processing"
+    ]
+  },
+  {
+    "id": "E006",
+    "domain": "FRAUD",
+    "title": "Digital payments account for most reported fraud cases by number",
+    "source_name": "Reserve Bank of India",
+    "source_type": "central_bank",
+    "publication_date": "2025-05-29",
+    "url": "https://www.rbi.org.in/scripts/AnnualReportPublications.aspx?Id=1436",
+    "claim": "Frauds occurred predominantly in digital payments such as card/internet transactions in terms of number.",
+    "evidence": "RBI's Annual Report 2024-25 states that frauds were predominantly in digital payments by number.",
+    "strategic_implication": "Because FinNova operates digital payments, fraud detection should be evaluated as a core strategic capability.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "fraud",
+      "digital-payments",
+      "risk"
+    ]
+  },
+  {
+    "id": "E007",
+    "domain": "FRAUD",
+    "title": "Loan portfolios dominate fraud value",
+    "source_name": "Reserve Bank of India",
+    "source_type": "central_bank",
+    "publication_date": "2025-05-29",
+    "url": "https://www.rbi.org.in/scripts/AnnualReportPublications.aspx?Id=1406",
+    "claim": "Frauds were reported primarily in the loan portfolio in terms of value.",
+    "evidence": "RBI reports advances as the largest area by value among fraud cases in its cited reporting period.",
+    "strategic_implication": "FinNova's lending business creates a second major risk dimension, making combined fraud-and-lending intelligence strategically relevant.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "fraud",
+      "lending",
+      "credit-risk"
+    ]
+  },
+  {
+    "id": "E008",
+    "domain": "FRAUD",
+    "title": "Fraud detection can suffer from long detection delays",
+    "source_name": "Reserve Bank of India",
+    "source_type": "central_bank",
+    "publication_date": "2024-05-30",
+    "url": "https://www.rbi.org.in/scripts/AnnualReportPublications.aspx?Id=1406",
+    "claim": "RBI identified a significant time lag between occurrence and detection of reported frauds.",
+    "evidence": "The RBI annual report notes that a very large share of fraud value reported in the year related to frauds occurring in previous financial years.",
+    "strategic_implication": "Reducing detection latency is a defensible transformation KPI for FinNova's fraud programme.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "fraud",
+      "detection",
+      "latency",
+      "risk"
+    ]
+  },
+  {
+    "id": "E009",
+    "domain": "FRAUD",
+    "title": "AI can identify suspicious transaction networks",
+    "source_name": "Bank for International Settlements",
+    "source_type": "international_financial_institution",
+    "publication_date": "2025-10-08",
+    "url": "https://www.bis.org/speeches/20251008-artificial-intelligence-and-central-banks-monetary-and-financial-stability-implications",
+    "claim": "Graph-based AI approaches can improve fraud detection by identifying suspicious transaction networks.",
+    "evidence": "BIS discusses graph neural networks for suspicious transaction-network detection and cross-border fraud monitoring.",
+    "strategic_implication": "FinNova can consider network-aware fraud analytics as a future capability beyond simple transaction rules.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "fraud",
+      "graph-ai",
+      "payments",
+      "aml"
+    ]
+  },
+  {
+    "id": "E010",
+    "domain": "FRAUD",
+    "title": "AI is already used for fraud and cyber-risk mitigation",
+    "source_name": "Bank for International Settlements",
+    "source_type": "international_financial_institution",
+    "publication_date": "2024-11-04",
+    "url": "https://www.bis.org/speeches/20241104-engaging-machine-ai-and-financial-stability",
+    "claim": "Surveyed firms reported AI use for cyber-attack, fraud and money-laundering risk mitigation.",
+    "evidence": "BIS reported 37% of respondents using AI against cyber-attack, 33% for fraud and 20% for money laundering.",
+    "strategic_implication": "Fraud AI is not merely speculative; it is an established financial-sector use case.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "fraud",
+      "cybersecurity",
+      "aml",
+      "ai-adoption"
+    ]
+  },
+  {
+    "id": "E011",
+    "domain": "FRAUD",
+    "title": "AI-enabled scams are becoming more sophisticated",
+    "source_name": "OECD",
+    "source_type": "international_policy_organisation",
+    "publication_date": "2026-07-01",
+    "url": "https://www.oecd.org/en/publications/protecting-consumers-from-financial-scams-and-frauds_d41817bb-en.html",
+    "claim": "Financial scams are becoming more sophisticated and increasingly leverage AI and deepfakes.",
+    "evidence": "OECD notes that growing online financial-service use increases fraud exposure and that AI/deepfakes are contributing to more sophisticated scams.",
+    "strategic_implication": "FinNova needs adaptive fraud controls and customer education, not only static rules.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "fraud",
+      "deepfakes",
+      "consumer-protection",
+      "ai"
+    ]
+  },
+  {
+    "id": "E012",
+    "domain": "LENDING",
+    "title": "Digital lending requires need-based data collection and explicit consent",
+    "source_name": "Reserve Bank of India",
+    "source_type": "central_bank",
+    "publication_date": "2022-09-02",
+    "url": "https://systemhealth.rbi.org.in/Scripts/NotificationUser.aspx_Id%3D12382%26Mode%3D0.html",
+    "claim": "Digital lending data collection must be need-based and based on prior explicit borrower consent with an audit trail.",
+    "evidence": "RBI Digital Lending Guidelines specify these requirements and provide borrowers options around consent and data use.",
+    "strategic_implication": "Any AI lending architecture for FinNova must include consent, purpose limitation and auditable data use.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "lending",
+      "consent",
+      "privacy",
+      "data-governance"
+    ]
+  },
+  {
+    "id": "E013",
+    "domain": "LENDING",
+    "title": "Algorithmic features in digital lending require transparency",
+    "source_name": "Reserve Bank of India",
+    "source_type": "central_bank",
+    "publication_date": "2022-08-10",
+    "url": "https://systemhealth.rbi.org.in/Scripts/PressReleaseDisplay.aspx_prid%3D52589.html",
+    "claim": "Algorithmic features used in digital lending should be documented to ensure necessary transparency.",
+    "evidence": "RBI's digital-lending working-group recommendations include documentation of algorithmic features supporting lending decisions.",
+    "strategic_implication": "Explainability and documentation should be part of FinNova's AI-lending design.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "lending",
+      "algorithms",
+      "transparency",
+      "governance"
+    ]
+  },
+  {
+    "id": "E014",
+    "domain": "LENDING",
+    "title": "Account Aggregators can reduce loan-processing time",
+    "source_name": "Reserve Bank of India",
+    "source_type": "central_bank",
+    "publication_date": "2024-02-26",
+    "url": "https://www.rbi.org.in/commonperson/images/FAME202426022024.pdf",
+    "claim": "Account Aggregators can substantially reduce the time required for loan processing.",
+    "evidence": "RBI describes real-time financial-information sharing through AAs and explicitly connects it to faster loan processing.",
+    "strategic_implication": "Consent-based financial-data integration is a credible lever for FinNova's lending transformation.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "account-aggregator",
+      "lending",
+      "data",
+      "speed"
+    ]
+  },
+  {
+    "id": "E015",
+    "domain": "LENDING",
+    "title": "Consent-based data can enable frictionless digital credit",
+    "source_name": "Reserve Bank of India",
+    "source_type": "central_bank",
+    "publication_date": "2024-08-01",
+    "url": "https://rbi.org.in/scripts/BS_ViewBulletin.aspx?Id=22851",
+    "claim": "RBI's Unified Lending Interface initiative aims to enable frictionless end-to-end digital credit using consent-based data and related services.",
+    "evidence": "RBI describes ULI as a platform intended to leverage consent-based data to support frictionless digital credit.",
+    "strategic_implication": "FinNova can model lending transformation around API-enabled, consent-based data flows.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "uli",
+      "digital-credit",
+      "apis",
+      "consent"
+    ]
+  },
+  {
+    "id": "E016",
+    "domain": "LENDING",
+    "title": "AI can support credit assessment",
+    "source_name": "Bank for International Settlements",
+    "source_type": "international_financial_institution",
+    "publication_date": "2025-07-28",
+    "url": "https://www.bis.org/speeches/20250728-artificial-intelligence-finance",
+    "claim": "AI has potential to improve credit-risk assessment.",
+    "evidence": "BIS identifies credit-risk assessment among financial-service areas where AI can improve quality and efficiency.",
+    "strategic_implication": "AI-assisted underwriting is a valid transformation candidate, but must be paired with governance requirements.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "lending",
+      "credit-risk",
+      "ai"
+    ]
+  },
+  {
+    "id": "CX",
+    "domain": "CX",
+    "title": "Digital-finance growth increases the importance of effective complaint handling",
+    "source_name": "World Bank",
+    "source_type": "international_financial_institution",
+    "publication_date": "2026",
+    "url": "https://digitalfinance.worldbank.org/topics/financial-consumer-protection/complaints-handling-and-dispute-resolution",
+    "claim": "As digital financial services expand, accessible and efficient complaint handling becomes increasingly important.",
+    "evidence": "World Bank guidance recommends functional, accessible and efficient complaint channels and clear escalation processes.",
+    "strategic_implication": "Customer-service transformation should include complaint resolution and escalation, not just chatbot deflection.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "customer-experience",
+      "complaints",
+      "digital-finance"
+    ]
+  },
+  {
+    "id": "E018",
+    "domain": "CX",
+    "title": "Digital-credit complaint journeys can become fragmented",
+    "source_name": "World Bank",
+    "source_type": "international_financial_institution",
+    "publication_date": "2026",
+    "url": "https://digitalfinance.worldbank.org/topics/digital-credit/complaint-resolution",
+    "claim": "Digital-credit customers may face fragmented complaint mechanisms across lenders, platforms, partners and other providers.",
+    "evidence": "World Bank notes that multiple entities can create confusion about where complaints should be lodged and resolved.",
+    "strategic_implication": "FinNova should design a unified complaint-intelligence workflow across its ecosystem.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "customer-experience",
+      "complaints",
+      "digital-credit",
+      "operations"
+    ]
+  },
+  {
+    "id": "E019",
+    "domain": "CX",
+    "title": "AI can improve customer support",
+    "source_name": "Bank for International Settlements",
+    "source_type": "international_financial_institution",
+    "publication_date": "2025-04-09",
+    "url": "https://www.bis.org/speeches/20250409-ai-fintechs-and-banks",
+    "claim": "GenAI-powered chatbots can assist customer service and potentially handle more complex customer tasks.",
+    "evidence": "BIS describes AI-powered customer-service chatbots and their potential to break complex tasks into components.",
+    "strategic_implication": "FinNova can explore AI-assisted support with human escalation for higher-risk cases.",
+    "confidence": 5,
+    "relevance": 4,
+    "tags": [
+      "customer-service",
+      "genai",
+      "automation"
+    ]
+  },
+  {
+    "id": "E020",
+    "domain": "CX",
+    "title": "Multilingual AI can reduce customer interaction friction",
+    "source_name": "Bank for International Settlements",
+    "source_type": "international_financial_institution",
+    "publication_date": "2026-04-16",
+    "url": "https://www.bis.org/speeches/20260416-ai-finance-what-can-change-what-must-never-change",
+    "claim": "AI-enabled multilingual chatbots and voice interfaces can make financial interactions simpler and more responsive.",
+    "evidence": "BIS discusses multilingual and voice-based AI as a way to reduce paperwork and language-related friction.",
+    "strategic_implication": "For a geographically diverse customer base, multilingual support can be a measurable CX transformation lever.",
+    "confidence": 5,
+    "relevance": 4,
+    "tags": [
+      "customer-experience",
+      "multilingual",
+      "voice-ai",
+      "accessibility"
+    ]
+  },
+  {
+    "id": "E021",
+    "domain": "CX",
+    "title": "RBI received millions of customer complaints through ombudsman channels",
+    "source_name": "Reserve Bank of India",
+    "source_type": "central_bank",
+    "publication_date": "2025-05-29",
+    "url": "https://www.rbi.org.in/scripts/AnnualReportPublications.aspx?Id=1436",
+    "claim": "RBI reported 2.96 lakh complaints received at Ombudsman offices during 2024-25, with many related to loans/advances and digital banking products.",
+    "evidence": "RBI Annual Report 2024-25 records 2.96 lakh complaints and identifies loans/advances and digital banking products as major complaint areas.",
+    "strategic_implication": "Complaint volume and digital-banking issues justify customer-service analytics and faster resolution as a transformation dimension.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "customer-experience",
+      "complaints",
+      "digital-banking",
+      "lending"
+    ]
+  },
+  {
+    "id": "E022",
+    "domain": "GOVERNANCE",
+    "title": "AI creates model, cyber and third-party risks in finance",
+    "source_name": "Financial Stability Board",
+    "source_type": "international_financial_standard_setter",
+    "publication_date": "2024-11-14",
+    "url": "https://www.fsb.org/2024/11/the-financial-stability-implications-of-artificial-intelligence/",
+    "claim": "AI can amplify vulnerabilities involving third-party dependencies, cyber risk, market correlations and model risk.",
+    "evidence": "FSB identifies these vulnerabilities while noting benefits such as efficiency, compliance, customisation and advanced analytics.",
+    "strategic_implication": "FinNova's transformation portfolio needs explicit risk and dependency assessment for AI initiatives.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "governance",
+      "model-risk",
+      "cyber",
+      "third-party"
+    ]
+  },
+  {
+    "id": "E023",
+    "domain": "GOVERNANCE",
+    "title": "NIST AI RMF uses Govern, Map, Measure and Manage",
+    "source_name": "National Institute of Standards and Technology",
+    "source_type": "standards_body",
+    "publication_date": "2023-01-26",
+    "url": "https://www.nist.gov/itl/ai-risk-management-framework",
+    "claim": "The NIST AI Risk Management Framework organizes AI risk management into Govern, Map, Measure and Manage functions.",
+    "evidence": "NIST describes these four functions as the core structure for managing AI risks across the lifecycle.",
+    "strategic_implication": "FinNova can use these functions as a governance reference layer for evaluating proposed AI initiatives.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "governance",
+      "nist",
+      "risk-management",
+      "lifecycle"
+    ]
+  },
+  {
+    "id": "E024",
+    "domain": "GOVERNANCE",
+    "title": "Trustworthy AI includes privacy, fairness and explainability",
+    "source_name": "National Institute of Standards and Technology",
+    "source_type": "standards_body",
+    "publication_date": "2023-01-26",
+    "url": "https://www.nist.gov/itl/ai-risk-management-framework/ai-risk-management-framework-faqs",
+    "claim": "NIST identifies reliability, safety, security, accountability, transparency, explainability, privacy and fairness as trustworthiness characteristics.",
+    "evidence": "NIST AI RMF FAQ lists these characteristics and recommends considering them throughout the AI lifecycle.",
+    "strategic_implication": "FinNova's AI prioritisation model should score more than ROI; it should also account for trustworthiness and risk.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "governance",
+      "privacy",
+      "fairness",
+      "explainability",
+      "security"
+    ]
+  },
+  {
+    "id": "E025",
+    "domain": "GOVERNANCE",
+    "title": "Financial-sector AI governance needs to evolve with AI adoption",
+    "source_name": "Financial Stability Board",
+    "source_type": "international_financial_standard_setter",
+    "publication_date": "2024-11-14",
+    "url": "https://www.fsb.org/2024/11/the-financial-stability-implications-of-artificial-intelligence/",
+    "claim": "Authorities should monitor AI developments, assess policy-framework adequacy and enhance supervisory capabilities.",
+    "evidence": "FSB calls for stronger monitoring and assessment as AI adoption in finance grows.",
+    "strategic_implication": "FinNova should treat AI governance as a continuing capability rather than a one-time compliance checklist.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "governance",
+      "regulation",
+      "supervision",
+      "ai"
+    ]
+  },
+  {
+    "id": "E026",
+    "domain": "GOVERNANCE",
+    "title": "Regulators are examining AI's long-term impact on retail finance",
+    "source_name": "Financial Conduct Authority",
+    "source_type": "financial_regulator",
+    "publication_date": "2026-07-06",
+    "url": "https://www.fca.org.uk/publications/calls-input/review-long-term-impact-ai-retail-financial-services-mills-review",
+    "claim": "The FCA's 2026 Mills Review examines how AI may reshape retail financial services through 2030 and beyond.",
+    "evidence": "The review covers technology evolution, firms and markets, consumers, risks, resilience and regulatory approaches.",
+    "strategic_implication": "AI transformation should be evaluated against future market and regulatory change, not just current operational benefits.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "governance",
+      "regulation",
+      "strategy",
+      "future"
+    ]
+  },
+  {
+    "id": "E027",
+    "domain": "DATA",
+    "title": "Account Aggregators enable secure consent-based financial data sharing",
+    "source_name": "Reserve Bank of India",
+    "source_type": "central_bank",
+    "publication_date": "2024-02-26",
+    "url": "https://www.rbi.org.in/commonperson/images/FAME202426022024.pdf",
+    "claim": "Account Aggregators enable customers to share financial information securely based on clear instructions.",
+    "evidence": "RBI explains that AAs do not see or store the financial information and share it with financial institutions based on customer instructions.",
+    "strategic_implication": "FinNova can build data-enabled products without assuming unrestricted ownership of all customer financial data.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "data",
+      "account-aggregator",
+      "consent",
+      "privacy"
+    ]
+  },
+  {
+    "id": "E028",
+    "domain": "DATA",
+    "title": "Account Aggregator data can support broader financial services",
+    "source_name": "Reserve Bank of India",
+    "source_type": "central_bank",
+    "publication_date": "2024-02-26",
+    "url": "https://www.rbi.org.in/commonperson/images/FAME202426022024.pdf",
+    "claim": "Digitally transmitted financial-asset information can support lending, credit monitoring, wealth management and personal finance management.",
+    "evidence": "RBI identifies these use cases within its Account Aggregator explanation.",
+    "strategic_implication": "FinNova can treat consented financial data as a platform capability supporting multiple products rather than only loan underwriting.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "data",
+      "lending",
+      "wealth",
+      "personal-finance"
+    ]
+  },
+  {
+    "id": "E029",
+    "domain": "DATA",
+    "title": "Digital-finance data can support credit scoring and fraud reduction",
+    "source_name": "World Bank",
+    "source_type": "international_financial_institution",
+    "publication_date": "2026",
+    "url": "https://responsiblefinance.worldbank.org/en/responsible-finance/financial-consumer-protection",
+    "claim": "New sources of data and data processing can support customer-centric products, credit scoring, KYC and fraud reduction.",
+    "evidence": "World Bank discusses these benefits while also highlighting the need to manage consumer risks.",
+    "strategic_implication": "FinNova's data strategy can connect lending, KYC and fraud use cases through governed data capabilities.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "data",
+      "credit-scoring",
+      "kyc",
+      "fraud"
+    ]
+  },
+  {
+    "id": "E030",
+    "domain": "DATA",
+    "title": "AI finance adoption increases dependence on data, cloud and third parties",
+    "source_name": "OECD",
+    "source_type": "international_policy_organisation",
+    "publication_date": "2026",
+    "url": "https://www.oecd.org/en/topics/sub-issues/digital-finance/artificial-intelligence-in-finance.html",
+    "claim": "GenAI adoption in finance increases reliance on data, cloud services and third parties, creating governance and financial-stability considerations.",
+    "evidence": "OECD recommends quality data, sound governance, privacy and ethics alongside monitoring concentration and application diversity.",
+    "strategic_implication": "FinNova's data platform must include data quality, privacy and third-party dependency controls.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "data",
+      "cloud",
+      "third-party",
+      "privacy",
+      "governance"
+    ]
+  },
+  {
+    "id": "E031",
+    "domain": "DATA",
+    "title": "UPI operates at very large transaction scale",
+    "source_name": "National Payments Corporation of India",
+    "source_type": "payments_network",
+    "publication_date": "2026-06",
+    "url": "https://www.npci.org.in/product/upi/product-statistics",
+    "claim": "UPI recorded 22.716 billion transactions worth approximately ₹28.92 trillion in June 2026.",
+    "evidence": "NPCI's published monthly statistics report 22,716.07 million transactions and ₹2,892,138.67 crore in June 2026.",
+    "strategic_implication": "At this ecosystem scale, payment reliability, fraud monitoring and analytics are strategically significant capabilities.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "upi",
+      "payments",
+      "scale",
+      "fraud",
+      "analytics"
+    ]
+  },
+  {
+    "id": "E032",
+    "domain": "GOVERNANCE",
+    "title": "AI consumer risks include bias, privacy and unreliable outputs",
+    "source_name": "OECD",
+    "source_type": "international_policy_organisation",
+    "publication_date": "2026",
+    "url": "https://www.oecd.org/en/topics/sub-issues/digital-finance/artificial-intelligence-in-finance.html",
+    "claim": "AI in finance can create risks involving data protection, privacy, bias, discrimination and unreliable outputs.",
+    "evidence": "OECD highlights these risks alongside benefits such as accessibility, timely information, cost-effective services and improved user experiences.",
+    "strategic_implication": "FinNova should include consumer-risk controls in AI use-case prioritisation and deployment readiness.",
+    "confidence": 5,
+    "relevance": 5,
+    "tags": [
+      "governance",
+      "consumer-protection",
+      "bias",
+      "privacy",
+      "reliability"
+    ]
+  }
+]

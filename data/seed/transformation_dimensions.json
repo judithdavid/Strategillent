@@ -1,0 +1,26 @@
+[
+  {
+    "id": "T01",
+    "name": "Intelligent Fraud & Risk"
+  },
+  {
+    "id": "T02",
+    "name": "AI-Assisted Lending"
+  },
+  {
+    "id": "T03",
+    "name": "Customer Intelligence"
+  },
+  {
+    "id": "T04",
+    "name": "Financial Data Platform"
+  },
+  {
+    "id": "T05",
+    "name": "Responsible AI Governance"
+  },
+  {
+    "id": "T06",
+    "name": "Payment Operations & Resilience"
+  }
+]

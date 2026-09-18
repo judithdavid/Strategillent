@@ -1,0 +1,98 @@
+[
+  {
+    "id": "T01",
+    "name": "Intelligent Fraud & Risk",
+    "description": "Improve prevention, detection, investigation and response to payment and lending fraud.",
+    "evidence_domains": [
+      "FRAUD",
+      "AI"
+    ],
+    "candidate_initiatives": [
+      "real-time transaction risk scoring",
+      "network/graph fraud analytics",
+      "AI-assisted investigation",
+      "adaptive scam detection"
+    ]
+  },
+  {
+    "id": "T02",
+    "name": "AI-Assisted Lending",
+    "description": "Reduce lending decision friction while preserving responsible decisioning and governance.",
+    "evidence_domains": [
+      "LENDING",
+      "AI",
+      "DATA",
+      "GOVERNANCE"
+    ],
+    "candidate_initiatives": [
+      "document intelligence",
+      "consent-based financial-data ingestion",
+      "AI underwriting support",
+      "decision explainability layer"
+    ]
+  },
+  {
+    "id": "T03",
+    "name": "Customer Intelligence",
+    "description": "Improve support, complaint handling and customer journeys using AI and analytics.",
+    "evidence_domains": [
+      "CX",
+      "AI"
+    ],
+    "candidate_initiatives": [
+      "complaint classification",
+      "AI support assistant",
+      "multilingual support",
+      "case routing and escalation intelligence"
+    ]
+  },
+  {
+    "id": "T04",
+    "name": "Financial Data Platform",
+    "description": "Create governed, consent-based access to financial information for products and decisioning.",
+    "evidence_domains": [
+      "DATA",
+      "LENDING",
+      "FRAUD"
+    ],
+    "candidate_initiatives": [
+      "consent orchestration",
+      "financial-data APIs",
+      "customer financial profile",
+      "data-quality monitoring"
+    ]
+  },
+  {
+    "id": "T05",
+    "name": "Responsible AI Governance",
+    "description": "Create controls for AI risk, privacy, fairness, explainability, security and third-party dependencies.",
+    "evidence_domains": [
+      "GOVERNANCE",
+      "DATA",
+      "AI"
+    ],
+    "candidate_initiatives": [
+      "AI inventory",
+      "risk classification",
+      "model monitoring",
+      "explainability controls",
+      "AI incident management"
+    ]
+  },
+  {
+    "id": "T06",
+    "name": "Payment Operations & Resilience",
+    "description": "Use analytics and AI to improve payment reliability, operational monitoring and incident response.",
+    "evidence_domains": [
+      "DATA",
+      "AI",
+      "FRAUD"
+    ],
+    "candidate_initiatives": [
+      "payment anomaly detection",
+      "incident intelligence",
+      "operations copilot",
+      "service-quality monitoring"
+    ]
+  }
+]

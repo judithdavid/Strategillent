@@ -1,0 +1,40 @@
+{
+  "company": "FinNova",
+  "fictional": true,
+  "industry": "Fintech",
+  "business_model": [
+    "digital_payments",
+    "consumer_lending"
+  ],
+  "markets": [
+    "India",
+    "Southeast Asia"
+  ],
+  "customers": 12000000,
+  "employees": 2500,
+  "products": [
+    "digital payments",
+    "consumer loans",
+    "merchant payments",
+    "wallet"
+  ],
+  "strategic_context": {
+    "growth": "Rapid customer growth has increased operational complexity.",
+    "key_challenges": [
+      "rising digital-payment fraud",
+      "slow or manual lending workflows",
+      "high customer-support and complaint volume",
+      "fragmented customer and financial data",
+      "increasing AI and regulatory complexity",
+      "competition from digital-first fintechs"
+    ],
+    "strategic_objectives": [
+      "improve trust and security",
+      "increase operational efficiency",
+      "improve customer experience",
+      "accelerate responsible AI adoption",
+      "reduce decision and resolution latency"
+    ]
+  },
+  "assumption_policy": "All company-specific facts are fictional assumptions for the challenge and must never be presented as external research evidence."
+}
