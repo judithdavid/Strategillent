@@ -1,5 +1,3 @@
-
-````
 # Strategillent
 
 ## AI Transformation Strategy Intelligence
@@ -12,13 +10,13 @@ The application demonstrates the following transformation intelligence flow:
 
 ---
 
-## Demonstration Case
+# Demonstration Case
 
-### FinNova
+## FinNova
 
 FinNova is a fictional digital payments and consumer lending organisation created as the demonstration case for this project.
 
-The project includes structured external research covering topics such as:
+The project includes structured external research covering:
 
 - AI
 - Fraud
@@ -33,11 +31,13 @@ Fictional organisation information and external research are kept separate so th
 
 ---
 
-## Architecture
+# Application Architecture
+
+Strategillent follows a layered application architecture:
 
 ```text
 ┌──────────────────────────────────────────────┐
-│                USER INTERFACE                │
+│                 USER INTERFACE               │
 │              React + TypeScript              │
 └──────────────────────┬───────────────────────┘
                        │
@@ -45,31 +45,38 @@ Fictional organisation information and external research are kept separate so th
 ┌──────────────────────────────────────────────┐
 │              APPLICATION / API               │
 │                   FastAPI                    │
+│                                              │
+│ Organisation APIs                            │
+│ Research APIs                                │
+│ Intelligence APIs                            │
+│ Question APIs                                │
 └──────────────────────┬───────────────────────┘
                        │
-             ┌─────────┴─────────┐
-             ▼                   ▼
+              ┌────────┴────────┐
+              ▼                 ▼
 ┌──────────────────────┐ ┌─────────────────────┐
 │   AI INTELLIGENCE    │ │      RETRIEVAL      │
 │                      │ │                     │
 │ Ollama / Llama 3.2   │ │ Evidence Search &   │
 │ Strategic Analysis   │ │ Relevance Ranking   │
+│ Answer Generation    │ │                     │
 └──────────┬───────────┘ └──────────┬──────────┘
            │                        │
            └────────────┬───────────┘
                         ▼
 ┌──────────────────────────────────────────────┐
-│             DATA & KNOWLEDGE                │
+│               DATA & KNOWLEDGE               │
 │                                              │
-│          SQLite + SQLAlchemy                 │
+│             SQLite + SQLAlchemy              │
 │                                              │
 │ Organisations                                │
+│ Objectives                                   │
 │ Evidence                                     │
 │ Research Sources                             │
 │ Strategic Issues                             │
 │ Transformation Dimensions                    │
 │ Opportunities                                │
-│ Initiatives                                  │
+│ Initiatives                                 │
 │ Analysis Runs                                │
 │ Relationships                                │
 └──────────────────────┬───────────────────────┘
@@ -78,23 +85,26 @@ Fictional organisation information and external research are kept separate so th
 ┌──────────────────────────────────────────────┐
 │          EXTERNAL RESEARCH / DATA            │
 │                                              │
-│       Structured Research Dataset            │
-│       Regulators / Institutions              │
+│        Structured Research Dataset           │
+│        Regulators / Institutions             │
 └──────────────────────────────────────────────┘
 ````
 
+The architecture separates the user interface, application/API layer, AI intelligence, retrieval, persistent data, and external research.
+
 ---
 
-## Technology Stack
+# Technology Stack
 
-### Frontend
+## Frontend
 
 * React
 * TypeScript
 * Vite
 * React Router
+* Lucide React
 
-### Backend
+## Backend
 
 * Python
 * FastAPI
@@ -102,20 +112,22 @@ Fictional organisation information and external research are kept separate so th
 * SQLite
 * Pydantic
 
-### AI
+## AI
 
 * Ollama
 * Llama 3.2
 
 The AI model runs locally through Ollama.
 
-### Testing
+## Testing
 
 * Pytest
 
+The application uses locally reproducible and freely available technologies without requiring a paid software licence.
+
 ---
 
-## Project Structure
+# Project Structure
 
 ```text
 Strategillent/
@@ -141,6 +153,9 @@ Strategillent/
 │
 ├── data/
 │   └── seed/
+│       ├── evidence.json
+│       ├── organisation.json
+│       └── transformation_dimensions.json
 │
 ├── research/
 │   ├── external_evidence.json
@@ -155,6 +170,7 @@ Strategillent/
 │   └── vite.config.ts
 │
 ├── README.md
+├── .env.example
 └── .gitignore
 ```
 
@@ -251,17 +267,21 @@ http://localhost:5173
 
 The project contains structured seed and research data.
 
-### Seed Data
+## Seed Data
 
 Located in:
 
-```
+```text
 data/seed/
 ```
 
-This contains the demonstration organisation, evidence, and transformation dimensions.
+This contains:
 
-### Research Data
+* Demonstration organisation
+* Evidence
+* Transformation dimensions
+
+## Research Data
 
 Located in:
 
@@ -276,7 +296,7 @@ This contains:
 * Transformation dimensions
 * Research notes
 
-The demonstration research dataset contains 32 evidence records.
+The demonstration research dataset contains **32 evidence records**.
 
 Each evidence record separates:
 
@@ -284,6 +304,8 @@ Each evidence record separates:
 * Supporting evidence
 * Strategic implication
 * Source information
+
+This structure allows the application to distinguish external evidence from strategic interpretation.
 
 ---
 
@@ -302,6 +324,8 @@ The application stores organisational information including:
 * Products
 * Challenges
 
+Organisation records are persisted in the database and can be accessed through the backend APIs.
+
 ---
 
 ## 2. Intelligence Analysis
@@ -316,25 +340,75 @@ It identifies:
 * Priorities
 * Recommended initiatives
 
+The backend processes structured records rather than relying on manually prepared presentation content.
+
 ---
 
-## 3. Evidence
+## 3. Evidence Retrieval
+
+The retrieval layer searches the structured evidence collection and ranks relevant records based on their relevance to the analysis or question.
+
+Relevant evidence is then supplied to the AI layer as contextual input.
+
+---
+
+## 4. AI Intelligence
+
+Ollama runs Llama 3.2 locally.
+
+AI is used for tasks including:
+
+* Strategic issue analysis
+* Evidence interpretation
+* Transformation opportunity generation
+* Intelligence answer generation
+
+The prompts instruct the model to use the supplied organisation context and evidence and not invent facts, statistics, or sources.
+
+---
+
+## 5. Evidence Traceability
 
 Evidence is stored with source information and strategic implications.
 
-This allows recommendations to be traced back to their underlying research.
+Strategic issues and opportunities can be associated with supporting evidence records.
+
+Intelligence answers also return the evidence IDs used for the generated response.
+
+This provides a traceable connection between:
+
+```text
+Research Evidence
+       ↓
+Strategic Analysis
+       ↓
+Transformation Opportunity
+       ↓
+Recommended Initiative
+```
 
 ---
 
-## 4. Prioritisation
+## 6. Prioritisation
 
 Transformation opportunities are prioritised using deterministic application logic.
 
-This keeps prioritisation predictable rather than relying entirely on an LLM-generated ranking.
+The priority score is calculated using:
+
+```text
+Priority =
+    0.35 × Business Impact
+  + 0.20 × Feasibility
+  + 0.20 × Urgency
+  + 0.15 × Strategic Alignment
+  + 0.10 × Evidence Confidence
+```
+
+This keeps prioritisation predictable and separates the scoring mechanism from LLM-generated text.
 
 ---
 
-## 5. Intelligence Q&A
+## 7. Intelligence Q&A
 
 The application provides an intelligence Q&A capability for interrogating the resulting analysis.
 
@@ -342,11 +416,13 @@ Example:
 
 > What should this organisation transform, why, what evidence supports it, and what should be done first?
 
-The answer is generated using the organisation context, retrieved evidence, and stored intelligence rather than a hard-coded response.
+The answer is generated using the organisation context and retrieved evidence rather than a hard-coded response.
+
+The response also returns the evidence IDs used to generate the answer.
 
 ---
 
-# Persistence and Traceability
+# Persistence and Data Model
 
 Strategillent uses SQLite with SQLAlchemy for persistent application data.
 
@@ -377,6 +453,38 @@ Transformation Intelligence
 
 This ensures that fictional organisation assumptions are not treated as external research facts.
 
+Analysis runs retain model and analysis-version information to support traceability.
+
+---
+
+# Dynamic Processing
+
+The application is designed around persisted records and reusable backend services rather than static presentation output.
+
+The workflow supports:
+
+```text
+Input
+  ↓
+API
+  ↓
+Database / Knowledge
+  ↓
+Retrieval
+  ↓
+AI Analysis
+  ↓
+Persistence
+  ↓
+Relationships
+  ↓
+Output
+```
+
+The same application workflow can process new organisation records and new intelligence questions without requiring a new static page or manually prepared response.
+
+The current demonstration is configured around the FinNova scenario and its structured transformation domains.
+
 ---
 
 # Testing
@@ -405,7 +513,7 @@ The current test suite passes successfully.
 
 ---
 
-# AI Usage
+# AI and Model Information
 
 Strategillent uses:
 
@@ -416,14 +524,33 @@ Llama 3.2
 
 The model is executed locally through Ollama.
 
-AI is used for:
+This avoids dependence on a paid hosted LLM API for the demonstration.
 
-* Strategic issue analysis
-* Evidence interpretation
-* Transformation opportunity generation
-* Intelligence answer generation
+If Ollama or the selected local model is unavailable, AI-dependent analysis and Q&A cannot generate new model output until a compatible local or migrated model endpoint is configured.
 
-Deterministic application logic is used where predictable behaviour is preferred, including prioritisation and data processing.
+The LLM integration is isolated in the AI layer, allowing the model endpoint to be replaced without changing the overall application architecture.
+
+---
+
+# Library and Licence Inventory
+
+| Technology   | Purpose                | Licence / Availability |
+| ------------ | ---------------------- | ---------------------- |
+| React        | Frontend UI            | MIT                    |
+| TypeScript   | Frontend development   | Apache-2.0             |
+| Vite         | Frontend build tooling | MIT                    |
+| React Router | Frontend routing       | MIT                    |
+| Lucide React | UI icons               | ISC                    |
+| Python       | Backend runtime        | PSF License            |
+| FastAPI      | Backend API framework  | MIT                    |
+| SQLAlchemy   | Database ORM           | MIT                    |
+| SQLite       | Persistent database    | Public domain          |
+| Pydantic     | Data validation        | MIT                    |
+| Pytest       | Automated testing      | MIT                    |
+| Ollama       | Local LLM runtime      | MIT                    |
+| Llama 3.2    | Local language model   | Meta Llama licence     |
+
+Licence terms should be checked against the exact versions distributed with the final environment before production or commercial use.
 
 ---
 
@@ -439,6 +566,8 @@ AI coding assistants were used during development to assist with:
 
 The resulting application was assembled, tested, and validated as part of the challenge submission.
 
+The AI application itself is separately powered by a locally running Ollama/Llama 3.2 model.
+
 ---
 
 # Demonstration Flow
@@ -452,9 +581,10 @@ The recommended demonstration sequence is:
 5. Review strategic issues
 6. Inspect supporting evidence
 7. Review transformation opportunities
-8. Review prioritisation
+8. Review deterministic prioritisation
 9. Ask an intelligence question
-10. Demonstrate how the resulting intelligence connects organisational context, evidence, analysis, and recommendations
+10. Show the evidence-backed answer
+11. Demonstrate how organisational context, evidence, analysis, and recommendations are connected
 
 ---
 
@@ -472,10 +602,11 @@ Strategillent was designed around:
 * Local AI execution
 * Automated testing
 * Data-driven transformation analysis
+* Separation of AI reasoning from application logic
 
 ---
 
-# Scope
+# Scope and Limitations
 
 FinNova is the primary demonstration scenario for this submission.
 
@@ -490,8 +621,12 @@ The application architecture uses reusable concepts such as:
 * Initiatives
 * Analysis Runs
 
-The current demonstration focuses on the supplied FinNova research dataset and demonstrates the complete transformation intelligence workflow from organisational context through evidence-backed recommendations.
+The current implementation focuses on the supplied FinNova research dataset and its six transformation domains.
 
-```
+The architecture is designed so that additional organisations, evidence domains, transformation dimensions, retrieval strategies, and analysis logic can be added without redesigning the entire application.
+
+For larger production workloads, the persistence layer could be migrated from SQLite to PostgreSQL and retrieval/analysis could be moved to asynchronous background processing.
+
+---
 
 
