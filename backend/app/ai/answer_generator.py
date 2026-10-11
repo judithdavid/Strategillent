@@ -3,11 +3,13 @@ from app.ai.prompts import build_question_prompt
 from app.models import Organisation, Evidence
 from app.core.config import settings
 
+
 def build_organisation_context(
     organisation: Organisation,
 ) -> str:
-
     return f"""
+Organisation profile:
+
 Name: {organisation.name}
 Industry: {organisation.industry}
 Business model: {", ".join(organisation.business_model or [])}
@@ -16,12 +18,28 @@ Customers: {organisation.customers}
 Employees: {organisation.employees}
 Products: {", ".join(organisation.products or [])}
 
+Business goals:
+{chr(10).join("- " + item for item in (organisation.goals or [])) or "Not provided"}
+
+Current business processes:
+{chr(10).join("- " + item for item in (organisation.processes or [])) or "Not provided"}
+
+Current technology and systems:
+{chr(10).join("- " + item for item in (organisation.technology or [])) or "Not provided"}
+
+Business constraints:
+{chr(10).join("- " + item for item in (organisation.constraints or [])) or "Not provided"}
+
 Known organisational challenges:
-{chr(10).join("- " + item for item in (organisation.challenges or []))}
+{chr(10).join("- " + item for item in (organisation.challenges or [])) or "Not provided"}
+
+Use this profile to tailor answers to this organisation.
+Do not assume missing information is known.
 
 IMPORTANT:
-This organisation context is fictional challenge data,
-not external research evidence.
+The organisation profile is contextual information supplied by the
+organisation or demonstration dataset, not external research evidence.
+External claims must be supported by the retrieved evidence.
 """
 
 
