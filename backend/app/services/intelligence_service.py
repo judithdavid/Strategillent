@@ -424,6 +424,65 @@ def get_dimension_by_external_id(
         .first()
     )
 
+def get_relevant_issue_domains(organisation: Organisation) -> set[str]:
+    """Select issue domains using the organisation's profile."""
+
+    profile_fields = [
+        organisation.challenges or [],
+        organisation.goals or [],
+        organisation.processes or [],
+        organisation.technology or [],
+        organisation.constraints or [],
+    ]
+
+    profile_text = " ".join(
+        str(item)
+        for field in profile_fields
+        for item in field
+    ).lower()
+
+    if not profile_text.strip():
+        return set(DOMAIN_ISSUES.keys())
+
+    domain_keywords = {
+        "FRAUD": [
+            "fraud", "risk", "scam", "suspicious", "payment security",
+            "financial loss", "transaction monitoring",
+        ],
+        "LENDING": [
+            "loan", "lending", "credit", "underwriting",
+            "loan processing", "credit decision",
+        ],
+        "CX": [
+            "customer support", "customer service", "customer experience",
+            "complaint", "support volume", "customer satisfaction",
+        ],
+        "DATA": [
+            "data", "fragmented", "silo", "integration",
+            "data quality", "customer records",
+        ],
+        "GOVERNANCE": [
+            "compliance", "regulation", "regulatory", "audit",
+            "governance", "privacy", "policy",
+        ],
+        "AI": [
+            "artificial intelligence", "machine learning", "automation",
+            "manual process", "operational efficiency", "ai adoption",
+        ],
+    }
+
+    relevant_domains = {
+        domain
+        for domain, keywords in domain_keywords.items()
+        if any(keyword in profile_text for keyword in keywords)
+        and domain in DOMAIN_ISSUES
+    }
+
+    # Preserve useful output for profiles whose wording doesn't match
+    # the initial keyword rules.
+    return relevant_domains or set(DOMAIN_ISSUES.keys())
+
+
 
 def create_strategic_issues(
     db: Session,
@@ -431,7 +490,11 @@ def create_strategic_issues(
 ):
     created_issues = []
 
+    relevant_domains = get_relevant_issue_domains(organisation)
+
     for domain, config in DOMAIN_ISSUES.items():
+        if domain not in relevant_domains:
+            continue
 
         evidence = get_evidence_for_domain(
             db,
