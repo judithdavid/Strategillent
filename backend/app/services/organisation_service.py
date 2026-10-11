@@ -41,6 +41,10 @@ def create_organisation(
         employees=data.employees,
         products=data.products,
         challenges=data.challenges,
+        goals=data.goals,
+        processes=data.processes,
+        technology=data.technology,
+        constraints=data.constraints,
     )
 
     db.add(organisation)

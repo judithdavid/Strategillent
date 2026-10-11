@@ -19,6 +19,10 @@ def test_create_organisation():
         "employees": 50,
         "products": ["Payments"],
         "challenges": ["Testing challenge"],
+        "goals": ["Reduce operating costs"],
+        "processes": ["Customer support"],
+        "technology": ["Legacy CRM"],
+        "constraints": ["Limited engineering budget"],
     }
 
     response = client.post("/api/organisations", json=payload)
@@ -29,3 +33,7 @@ def test_create_organisation():
 
     assert data["name"] == unique_name
     assert data["industry"] == "Fintech"
+    assert data["goals"] == ["Reduce operating costs"]
+    assert data["processes"] == ["Customer support"]
+    assert data["technology"] == ["Legacy CRM"]
+    assert data["constraints"] == ["Limited engineering budget"]

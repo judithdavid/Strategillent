@@ -29,14 +29,16 @@ class Organisation(Base):
         nullable=False,
     )
 
-    business_model: Mapped[list] = mapped_column(
+    business_model: Mapped[list[str]] = mapped_column(
         JSON,
         default=list,
+        nullable=False,
     )
 
-    markets: Mapped[list] = mapped_column(
+    markets: Mapped[list[str]] = mapped_column(
         JSON,
         default=list,
+        nullable=False,
     )
 
     customers: Mapped[int | None] = mapped_column(
@@ -49,43 +51,69 @@ class Organisation(Base):
         nullable=True,
     )
 
-    products: Mapped[list] = mapped_column(
+    products: Mapped[list[str]] = mapped_column(
         JSON,
         default=list,
+        nullable=False,
     )
 
-    challenges: Mapped[list] = mapped_column(
+    challenges: Mapped[list[str]] = mapped_column(
         JSON,
         default=list,
+        nullable=False,
     )
 
-    # -----------------------------------------------------
+    goals: Mapped[list[str]] = mapped_column(
+        JSON,
+        default=list,
+        nullable=False,
+    )
+
+    processes: Mapped[list[str]] = mapped_column(
+        JSON,
+        default=list,
+        nullable=False,
+    )
+
+    technology: Mapped[list[str]] = mapped_column(
+        JSON,
+        default=list,
+        nullable=False,
+    )
+
+    constraints: Mapped[list[str]] = mapped_column(
+        JSON,
+        default=list,
+        nullable=False,
+    )
+
     # Relationships
-    # -----------------------------------------------------
 
-    objectives = relationship(
+    objectives: Mapped[list["Objective"]] = relationship(
         "Objective",
         back_populates="organisation",
         cascade="all, delete-orphan",
     )
 
-    strategic_issues = relationship(
+    strategic_issues: Mapped[list["StrategicIssue"]] = relationship(
         "StrategicIssue",
         back_populates="organisation",
         cascade="all, delete-orphan",
     )
 
-    opportunities = relationship(
+    opportunities: Mapped[list["Opportunity"]] = relationship(
         "Opportunity",
         back_populates="organisation",
         cascade="all, delete-orphan",
     )
 
-    initiatives = relationship(
+    initiatives: Mapped[list["Initiative"]] = relationship(
         "Initiative",
         back_populates="organisation",
         cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:
-        return f"<Organisation(id={self.id}, name='{self.name}')>"
+        return (
+            f"<Organisation(id={self.id}, name='{self.name}')>"
+        )
