@@ -543,6 +543,27 @@ def create_strategic_issues(
     return created_issues
 
 
+def build_opportunity_context(organisation: Organisation) -> str:
+    """Build organisation-specific context for an opportunity."""
+
+    fields = {
+        "Business goals": organisation.goals or [],
+        "Current challenges": organisation.challenges or [],
+        "Current processes": organisation.processes or [],
+        "Technology and systems": organisation.technology or [],
+        "Business constraints": organisation.constraints or [],
+    }
+
+    sections = []
+
+    for label, values in fields.items():
+        if values:
+            sections.append(
+                f"{label}: " + "; ".join(str(value) for value in values)
+            )
+
+    return "\n".join(sections)
+
 def create_opportunities(
     db: Session,
     organisation: Organisation,
@@ -595,11 +616,28 @@ def create_opportunities(
             strategic_issue_id=issue.id,
             transformation_dimension_id=dimension_id,
             title=template["title"],
-            description=template["description"],
-            rationale=(
-                "Opportunity derived from the strategic issue and "
-                "supported by its associated external evidence."
+            
+            description=(
+                f"{template['description']} "
+                + (
+                    f"This opportunity is being considered in the context of "
+                    f"the organisation's profile: "
+                    f"{build_opportunity_context(organisation)}"
+                    if build_opportunity_context(organisation)
+                    else "Organisation-specific goals and constraints were not provided."
+                )
             ),
+            rationale=(
+                f"Derived from the strategic issue: {issue.title}. "
+                f"Supported by {len(issue.evidence)} associated evidence records. "
+                + (
+                    f"Relevant organisation context: "
+                    f"{build_opportunity_context(organisation)}"
+                    if build_opportunity_context(organisation)
+                    else "No additional organisation profile context was provided."
+                )
+            ),
+                
             business_impact=template["business_impact"],
             feasibility=template["feasibility"],
             urgency=template["urgency"],
