@@ -338,6 +338,35 @@ INITIATIVE_TEMPLATES = {
     ],
 }
 
+
+def build_initiative_context(
+    organisation: Organisation,
+    opportunity: Opportunity,
+) -> str:
+    """Build context for tailoring an initiative."""
+
+    sections = [
+        f"Relevant opportunity: {opportunity.title}",
+        f"Opportunity description: {opportunity.description}",
+    ]
+
+    fields = {
+        "Business goals": organisation.goals or [],
+        "Challenges": organisation.challenges or [],
+        "Processes": organisation.processes or [],
+        "Technology": organisation.technology or [],
+        "Constraints": organisation.constraints or [],
+    }
+
+    for label, values in fields.items():
+        if values:
+            sections.append(
+                f"{label}: " + "; ".join(str(value) for value in values)
+            )
+
+    return "\n".join(sections)
+
+
 def create_initiatives(
     db: Session,
     organisation: Organisation,
@@ -378,8 +407,17 @@ def create_initiatives(
                 organisation_id=organisation.id,
                 opportunity_id=opportunity.id,
                 name=template["name"],
-                description=template["description"],
-                expected_outcome=template["expected_outcome"],
+                
+                description=(
+                    f"{template['description']} "
+                    f"Context: {build_initiative_context(organisation, opportunity)}"
+                ),
+                expected_outcome=(
+                    f"{template['expected_outcome']} "
+                    f"This initiative supports the opportunity "
+                    f"'{opportunity.title}' and the organisation's stated goals."
+                ),
+
                 success_metric=template["success_metric"],
                 implementation_phase=template["implementation_phase"],
                 status="proposed",
