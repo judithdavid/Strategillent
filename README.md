@@ -1,3 +1,6 @@
+
+![Strategillent CI](https://github.com/judithdavid/Strategillent/actions/workflows/ci.yml/badge.svg)
+
 # Strategillent
 
 ## AI Transformation Strategy Intelligence
