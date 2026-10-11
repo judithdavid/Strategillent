@@ -31,6 +31,11 @@ export default function Organisation() {
     markets: "",
     products: "",
     challenges: "",
+    goals: "",
+    processes: "",
+    technology: "",
+    constraints: "",
+    
   });
 
   function updateField(
@@ -92,6 +97,27 @@ export default function Organisation() {
           .split("\n")
           .map((item) => item.trim())
           .filter(Boolean),
+
+        goals: form.goals
+          .split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean),
+
+        processes: form.processes
+          .split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean),
+
+        technology: form.technology
+          .split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean),
+
+        constraints: form.constraints
+          .split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean),
+
       };
 
       const created = await createOrganisation(payload);
@@ -109,6 +135,10 @@ export default function Organisation() {
         markets: "",
         products: "",
         challenges: "",
+        goals: "",
+        processes: "",
+        technology: "",
+        constraints: "",
       });
 
       setShowForm(false);
@@ -712,6 +742,8 @@ export default function Organisation() {
                     placeholder="e.g. 12000000"
                   />
 
+                
+
                 </div>
 
 
@@ -831,6 +863,58 @@ export default function Organisation() {
 
                 </div>
 
+              </div>
+
+              {/* GOALS */}
+              <div className="form-group form-full">
+                <label>Business Goals</label>
+                <textarea
+                  value={form.goals}
+                  onChange={(event) =>
+                    updateField("goals", event.target.value)
+                  }
+                  placeholder={"Enter one goal per line.\n\nImprove customer retention\nReduce operating costs\nExpand into new markets"}
+                  rows={4}
+                />
+              </div>
+
+              {/* PROCESSES */}
+              <div className="form-group form-full">
+                <label>Current Business Processes</label>
+                <textarea
+                  value={form.processes}
+                  onChange={(event) =>
+                    updateField("processes", event.target.value)
+                  }
+                  placeholder={"Enter one process per line.\n\nCustomer onboarding\nOrder processing\nCustomer support"}
+                  rows={4}
+                />
+              </div>
+
+              {/* TECHNOLOGY */}
+              <div className="form-group form-full">
+                <label>Current Technology and Systems</label>
+                <textarea
+                  value={form.technology}
+                  onChange={(event) =>
+                    updateField("technology", event.target.value)
+                  }
+                  placeholder={"Enter one tool or system per line.\n\nCRM\nERP\nCloud infrastructure"}
+                  rows={4}
+                />
+              </div>
+
+              {/* CONSTRAINTS */}
+              <div className="form-group form-full">
+                <label>Business Constraints</label>
+                <textarea
+                  value={form.constraints}
+                  onChange={(event) =>
+                    updateField("constraints", event.target.value)
+                  }
+                  placeholder={"Enter one constraint per line.\n\nLimited budget\nRegulatory requirements\nSmall engineering team"}
+                  rows={4}
+                />
               </div>
 
 
