@@ -87,10 +87,18 @@ class Evidence(Base):
     )
 
     tags: Mapped[list] = mapped_column(
-        JSON,
-        default=list,
+    JSON,
+    default=list,
+    nullable=False,
     )
 
+    industries: Mapped[list[str]] = mapped_column(
+        JSON,
+        default=list,
+        nullable=False,
+    )
+
+    
     # -----------------------------------------------------
     # Relationships
     # -----------------------------------------------------
