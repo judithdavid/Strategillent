@@ -55,11 +55,13 @@ def read_research_source(
 )
 def list_evidence(
     domain: str | None = None,
+    industry: str | None = None,
     db: Session = Depends(get_db),
 ):
     return get_evidence(
         db=db,
         domain=domain,
+        industry=industry,
     )
 
 

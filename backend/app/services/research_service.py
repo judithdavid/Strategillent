@@ -19,20 +19,36 @@ def get_research_source(db: Session, source_id: int):
     )
 
 
+
 def get_evidence(
     db: Session,
     domain: str | None = None,
+    industry: str | None = None,
 ):
     query = db.query(Evidence)
 
     if domain:
         query = query.filter(Evidence.domain == domain)
 
-    return (
+    records = (
         query
         .order_by(Evidence.domain, Evidence.id)
         .all()
     )
+
+    if industry:
+        requested_industry = industry.strip().casefold()
+
+        records = [
+            record
+            for record in records
+            if any(
+                value.strip().casefold() == requested_industry
+                for value in (record.industries or [])
+            )
+        ]
+
+    return records
 
 
 def get_evidence_by_id(db: Session, evidence_id: int):

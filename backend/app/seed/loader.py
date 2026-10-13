@@ -387,7 +387,7 @@ def seed_database(db: Session):
 
     print(
         f"Evidence skipped: "
-        f"{ evidence_updated}"
+        f"{evidence_updated}"
     )
 
     # -----------------------------------------------------
