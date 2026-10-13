@@ -207,36 +207,34 @@ def get_or_create_research_source(
 # Evidence
 # ---------------------------------------------------------
 
+
 def seed_evidence(
     db: Session,
     evidence_records: list[dict],
 ):
     created = 0
-    skipped = 0
+    updated = 0
 
     for item in evidence_records:
-
         external_id = item["id"]
+
+        # The current seed file contains FinTech research.
+        # Future industry packs should specify their industries explicitly.
+        industries = item.get("industries") or ["FinTech"]
 
         existing = (
             db.query(Evidence)
-            .filter(
-                Evidence.external_id
-                == external_id
-            )
+            .filter(Evidence.external_id == external_id)
             .first()
         )
 
         if existing:
-            skipped += 1
+            # Update industry metadata for records already in the database.
+            existing.industries = industries
+            updated += 1
             continue
 
-        research_source = (
-            get_or_create_research_source(
-                db,
-                item,
-            )
-        )
+        research_source = get_or_create_research_source(db, item)
 
         evidence = Evidence(
             external_id=external_id,
@@ -249,21 +247,11 @@ def seed_evidence(
             url=item["url"],
             claim=item["claim"],
             evidence_text=item["evidence"],
-            strategic_implication=item[
-                "strategic_implication"
-            ],
-            confidence=item.get(
-                "confidence",
-                1,
-            ),
-            relevance=item.get(
-                "relevance",
-                1,
-            ),
-            tags=item.get(
-                "tags",
-                [],
-            ),
+            strategic_implication=item["strategic_implication"],
+            confidence=item.get("confidence", 1),
+            relevance=item.get("relevance", 1),
+            tags=item.get("tags", []),
+            industries=industries,
         )
 
         db.add(evidence)
@@ -271,7 +259,7 @@ def seed_evidence(
 
     db.flush()
 
-    return created, skipped
+    return created, updated
 
 
 # ---------------------------------------------------------
@@ -385,7 +373,7 @@ def seed_database(db: Session):
     # Evidence
     # -----------------------------------------------------
 
-    evidence_created, evidence_skipped = (
+    evidence_created,  evidence_updated = (
         seed_evidence(
             db,
             evidence_records,
@@ -399,7 +387,7 @@ def seed_database(db: Session):
 
     print(
         f"Evidence skipped: "
-        f"{evidence_skipped}"
+        f"{ evidence_updated}"
     )
 
     # -----------------------------------------------------
