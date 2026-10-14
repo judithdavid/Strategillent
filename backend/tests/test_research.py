@@ -47,3 +47,58 @@ def test_get_research_domains():
 
     assert isinstance(domains, list)
     assert len(domains) > 0
+
+
+def test_get_evidence_filters_by_industry():
+    fintech_response = client.get(
+        "/api/research/evidence",
+        params={"industry": "FinTech"},
+    )
+
+    assert fintech_response.status_code == 200
+
+    fintech_data = fintech_response.json()
+
+    assert isinstance(fintech_data, list)
+    assert len(fintech_data) > 0
+    assert all(
+        "FinTech" in item.get("industries", [])
+        for item in fintech_data
+    )
+
+
+def test_edtech_filter_excludes_fintech_only_evidence():
+    response = client.get(
+        "/api/research/evidence",
+        params={"industry": "EdTech"},
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert all(
+        "EdTech" in item.get("industries", [])
+        for item in data
+    )
+
+
+def test_get_evidence_filters_by_domain_and_industry():
+    response = client.get(
+        "/api/research/evidence",
+        params={
+            "domain": "AI",
+            "industry": "FinTech",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert all(item["domain"] == "AI" for item in data)
+    assert all(
+        "FinTech" in item.get("industries", [])
+        for item in data
+    )
+

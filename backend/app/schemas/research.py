@@ -1,7 +1,6 @@
 from datetime import date
 
-from pydantic import BaseModel, ConfigDict
-
+from pydantic import BaseModel, ConfigDict, Field
 
 class ResearchSourceResponse(BaseModel):
     id: int
@@ -27,7 +26,8 @@ class EvidenceResponse(BaseModel):
     strategic_implication: str
     confidence: int
     relevance: int
-    tags: list[str] = []
+    tags: list[str] = Field(default_factory=list)
+    industries: list[str] = Field(default_factory=list)
 
     research_source: ResearchSourceResponse
 
