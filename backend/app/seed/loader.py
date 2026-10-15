@@ -75,8 +75,18 @@ def parse_date(value: Any) -> date | None:
 # Organisation
 # ---------------------------------------------------------------------
 
-def seed_organisation(db: Session, organisation_data: dict) -> Organisation:
+def seed_organisation(
+    db: Session,
+    organisation_data: dict,
+) -> Organisation:
+
     company_name = organisation_data["company"]
+    industry = organisation_data.get("industry")
+
+    if not isinstance(industry, str) or not industry.strip():
+        raise ValueError(
+            f"Missing or invalid industry for organisation: {company_name}"
+        )
 
     organisation = (
         db.query(Organisation)
@@ -86,7 +96,7 @@ def seed_organisation(db: Session, organisation_data: dict) -> Organisation:
 
     profile_fields = {
         "fictional": organisation_data.get("fictional", True),
-        "industry": organisation_data.get("industry", ""),
+        "industry": industry.strip(),
         "business_model": organisation_data.get("business_model", []),
         "markets": organisation_data.get("markets", []),
         "customers": organisation_data.get("customers"),
@@ -94,7 +104,8 @@ def seed_organisation(db: Session, organisation_data: dict) -> Organisation:
         "products": organisation_data.get("products", []),
         "challenges": organisation_data.get("challenges", []),
         "goals": organisation_data.get(
-            "goals", organisation_data.get("strategic_objectives", [])
+            "goals",
+            organisation_data.get("strategic_objectives", []),
         ),
         "processes": organisation_data.get("processes", []),
         "technology": organisation_data.get("technology", []),
@@ -102,17 +113,27 @@ def seed_organisation(db: Session, organisation_data: dict) -> Organisation:
     }
 
     if organisation is None:
-        organisation = Organisation(name=company_name)
+        organisation = Organisation(
+            name=company_name,
+            **profile_fields,
+        )
         db.add(organisation)
         db.flush()
+    else:
+        for field, value in profile_fields.items():
+            supplied = field in organisation_data
 
-    # Update existing records too, so rerunning the seeder applies profile changes.
-    for field, value in profile_fields.items():
-        if hasattr(organisation, field) and field in organisation_data:
-            setattr(organisation, field, value)
+            if field == "goals":
+                supplied = (
+                    supplied
+                    or "strategic_objectives" in organisation_data
+                )
 
-    # Keep legacy objective rows in sync with the seed file.
+            if supplied and hasattr(organisation, field):
+                setattr(organisation, field, value)
+
     objective_names = organisation_data.get("strategic_objectives", [])
+
     existing_objectives = {
         objective.name for objective in organisation.objectives
     }
