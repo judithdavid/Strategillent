@@ -1,32 +1,16 @@
 [
-  {
-    "id": "T01",
-    "name": "Intelligent Fraud & Risk",
-    "industries": ["FinTech"]
-  },
-  {
-    "id": "T02",
-    "name": "AI-Assisted Lending",
-    "industries": ["FinTech"]
-  },
-  {
-    "id": "T03",
-    "name": "Customer Intelligence",
-    "industries": ["FinTech"]
-  },
-  {
-    "id": "T04",
-    "name": "Financial Data Platform",
-    "industries": ["FinTech"]
-  },
-  {
-    "id": "T05",
-    "name": "Responsible AI Governance",
-    "industries": ["FinTech"]
-  },
-  {
-    "id": "T06",
-    "name": "Payment Operations & Resilience",
-    "industries": ["FinTech"]
-  }
+  {"id":"T01","name":"Intelligent Fraud & Risk","description":"Improve prevention, detection, investigation and response to payment and lending fraud.","industries":["FinTech"],"evidence_domains":["FRAUD","AI","GOVERNANCE"],"candidate_initiatives":["Real-time transaction risk scoring","Network and graph fraud analytics","AI-assisted fraud investigation"]},
+  {"id":"T02","name":"AI-Assisted Lending","description":"Reduce lending decision friction while preserving responsible decisioning and governance.","industries":["FinTech"],"evidence_domains":["LENDING","AI","DATA","GOVERNANCE"],"candidate_initiatives":["Lending document intelligence","Consent-based financial-data integration","Explainable lending decision support"]},
+  {"id":"T03","name":"Customer Intelligence","description":"Improve support, complaint handling and customer journeys using AI and analytics.","industries":["FinTech"],"evidence_domains":["CX","AI"],"candidate_initiatives":["AI-assisted customer support","Complaint classification and routing","Multilingual customer assistance"]},
+  {"id":"T04","name":"Financial Data Platform","description":"Create governed, consent-based access to financial information for products and decisioning.","industries":["FinTech"],"evidence_domains":["DATA","LENDING","FRAUD"],"candidate_initiatives":["Consent orchestration","Financial-data API integration","Financial data-quality monitoring"]},
+  {"id":"T05","name":"Responsible AI Governance","description":"Create controls for AI risk, privacy, fairness, explainability, security and third-party dependencies.","industries":["FinTech"],"evidence_domains":["GOVERNANCE","DATA","AI"],"candidate_initiatives":["AI system inventory and risk classification","AI output monitoring and review","AI incident management"]},
+  {"id":"T06","name":"Payment Operations & Resilience","description":"Use analytics and AI to improve payment reliability, operational monitoring and incident response.","industries":["FinTech"],"evidence_domains":["DATA","AI","FRAUD"],"candidate_initiatives":["Payment anomaly detection","Payment incident intelligence","Operations response assistant"]},
+  {"id":"E01","name":"AI-Assisted Teaching and Assessment","description":"Evaluate educator-controlled AI support for feedback, assessment workflows and learning activities.","industries":["EdTech","Education"],"evidence_domains":["AI","DATA"],"candidate_initiatives":["Educator-reviewed feedback assistant","Assessment workflow automation pilot","Learning-content quality review"]},
+  {"id":"E02","name":"Learner Support Intelligence","description":"Improve learner support, enquiry routing, accessibility and resolution quality.","industries":["EdTech","Education"],"evidence_domains":["CX","AI"],"candidate_initiatives":["Learner enquiry triage","Student support knowledge assistant","Accessibility and support journey review"]},
+  {"id":"E03","name":"Learning Data and Platform Integration","description":"Improve governed integration across learning platforms, learner records and learning analytics.","industries":["EdTech","Education"],"evidence_domains":["DATA","GOVERNANCE"],"candidate_initiatives":["LMS integration and data-quality assessment","Learner-data governance controls","Learning analytics readiness assessment"]},
+  {"id":"E04","name":"Responsible AI in Education","description":"Set safeguards for student privacy, human oversight, age-appropriate use and AI-generated content.","industries":["EdTech","Education"],"evidence_domains":["GOVERNANCE","AI"],"candidate_initiatives":["Education AI usage policy and review process","Student-data privacy assessment","Human review controls for AI-generated feedback"]},
+  {"id":"H01","name":"Clinical Workflow and Administrative Efficiency","description":"Evaluate carefully scoped automation for documentation and administrative workflows while preserving clinician oversight.","industries":["Healthcare","HealthTech"],"evidence_domains":["AI","DATA"],"candidate_initiatives":["Clinical documentation workflow assessment","Administrative task automation pilot","Clinician-reviewed summarisation workflow"]},
+  {"id":"H02","name":"Patient Access and Support","description":"Improve patient enquiry handling, appointment access and service navigation.","industries":["Healthcare","HealthTech"],"evidence_domains":["CX","AI"],"candidate_initiatives":["Patient enquiry triage","Appointment access workflow review","Patient support knowledge assistant"]},
+  {"id":"H03","name":"Health Data Interoperability and Quality","description":"Assess data quality, interoperability and governed exchange across health information systems.","industries":["Healthcare","HealthTech"],"evidence_domains":["DATA","GOVERNANCE"],"candidate_initiatives":["Health-data quality assessment","Interoperability gap analysis","Health-data access and audit controls"]},
+  {"id":"H04","name":"Responsible AI and Patient Safety","description":"Establish oversight, validation, privacy and risk controls for AI-enabled healthcare workflows.","industries":["Healthcare","HealthTech"],"evidence_domains":["GOVERNANCE","AI"],"candidate_initiatives":["Clinical AI use-case risk review","Human oversight and escalation design","AI validation and incident review process"]}
 ]

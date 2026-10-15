@@ -1,369 +1,193 @@
+"""Industry-aware, evidence-driven strategic intelligence pipeline.
+
+The seed data determines which dimensions and candidate initiatives apply to an
+industry. Evidence is strictly filtered by its industries metadata. No LLM output
+or external fact is treated as evidence, and opportunity ranking stays deterministic.
+"""
+from statistics import mean
 from sqlalchemy.orm import Session
 
 from app.models import (
-    Organisation,
-    StrategicIssue,
-    Opportunity,
-    TransformationDimension,
+    Organisation, StrategicIssue, Opportunity, TransformationDimension,
+    Initiative, AnalysisRun, Evidence,
 )
-
-from app.services.evidence_service import (
-    get_evidence_for_domain,
+from app.ai.issue_analyser import analyse_dimension
+from app.ai.opportunity_generator import generate_opportunity
+from app.services.industry_selection import (
+    filter_evidence_for_industry,
+    normalise_industry,
+    select_applicable_dimensions,
 )
+from app.services.prioritisation_service import calculate_and_rank_opportunities
 
-from app.services.prioritisation_service import (
-    calculate_and_rank_opportunities,
-)
-
-from app.models import (
-    Organisation,
-    StrategicIssue,
-    Opportunity,
-    TransformationDimension,
-    Initiative,
-    AnalysisRun,
-)
-
-ANALYSIS_VERSION = "1.0"
+ANALYSIS_VERSION = "2.0-evidence-driven"
 
 
-DOMAIN_ISSUES = {
-    "FRAUD": {
-        "title": "Rising digital-payment fraud and financial risk",
-        "description": (
-            "FinNova faces increasing pressure to detect and respond "
-            "to fraudulent payment activity as digital transaction "
-            "volumes and scam patterns evolve."
-        ),
-        "severity": 5,
-        "urgency": 5,
-        "dimension": "T01",
-    },
-    "LENDING": {
-        "title": "Slow and manual lending decision workflows",
-        "description": (
-            "FinNova's lending operations have opportunities to "
-            "reduce manual processing and improve decision speed "
-            "while maintaining responsible lending controls."
-        ),
-        "severity": 4,
-        "urgency": 4,
-        "dimension": "T02",
-    },
-    "CX": {
-        "title": "High customer-support and complaint volume",
-        "description": (
-            "FinNova has an opportunity to improve customer-support "
-            "efficiency, complaint handling and resolution latency."
-        ),
-        "severity": 4,
-        "urgency": 4,
-        "dimension": "T03",
-    },
-    "DATA": {
-        "title": "Fragmented customer and financial data",
-        "description": (
-            "Fragmented data creates challenges for customer "
-            "intelligence, financial profiling and consistent "
-            "decision-making."
-        ),
-        "severity": 4,
-        "urgency": 4,
-        "dimension": "T04",
-    },
-    "GOVERNANCE": {
-        "title": "Increasing AI governance and regulatory complexity",
-        "description": (
-            "FinNova needs stronger governance mechanisms as AI "
-            "adoption expands across financial decision-making "
-            "and customer-facing processes."
-        ),
-        "severity": 5,
-        "urgency": 5,
-        "dimension": "T05",
-    },
-    "AI": {
-        "title": "Need to accelerate responsible AI adoption",
-        "description": (
-            "FinNova can use AI to improve operational efficiency "
-            "and customer outcomes while maintaining appropriate "
-            "risk, governance and explainability controls."
-        ),
-        "severity": 4,
-        "urgency": 4,
-        "dimension": "T06",
-    },
-}
+def get_dimension_by_external_id(db: Session, external_id: str):
+    return (
+        db.query(TransformationDimension)
+        .filter(TransformationDimension.external_id == external_id)
+        .first()
+    )
 
 
-OPPORTUNITY_TEMPLATES = {
-    "T01": {
-        "title": "Intelligent Fraud & Risk",
-        "description": (
-            "Deploy real-time transaction risk scoring, network "
-            "analytics and AI-assisted fraud investigation."
-        ),
-        "business_impact": 5.0,
-        "feasibility": 4.0,
-        "urgency": 5.0,
-        "strategic_alignment": 5.0,
-    },
-    "T02": {
-        "title": "AI-Assisted Lending",
-        "description": (
-            "Introduce document intelligence, consent-based "
-            "financial-data ingestion and explainable AI underwriting "
-            "support."
-        ),
-        "business_impact": 5.0,
-        "feasibility": 3.5,
-        "urgency": 4.0,
-        "strategic_alignment": 5.0,
-    },
-    "T03": {
-        "title": "Customer Intelligence",
-        "description": (
-            "Use AI for complaint classification, customer-support "
-            "assistance, multilingual service and intelligent routing."
-        ),
-        "business_impact": 4.0,
-        "feasibility": 4.5,
-        "urgency": 4.0,
-        "strategic_alignment": 5.0,
-    },
-    "T04": {
-        "title": "Financial Data Platform",
-        "description": (
-            "Build a governed financial-data layer supporting "
-            "consent orchestration, financial-data APIs and "
-            "customer financial profiles."
-        ),
-        "business_impact": 5.0,
-        "feasibility": 3.0,
-        "urgency": 4.0,
-        "strategic_alignment": 5.0,
-    },
-    "T05": {
-        "title": "Responsible AI Governance",
-        "description": (
-            "Establish AI inventory, risk classification, model "
-            "monitoring, explainability controls and AI incident "
-            "management."
-        ),
-        "business_impact": 5.0,
-        "feasibility": 4.0,
-        "urgency": 5.0,
-        "strategic_alignment": 5.0,
-    },
-    "T06": {
-        "title": "Payment Operations & Resilience",
-        "description": (
-            "Use anomaly detection, incident intelligence and "
-            "operations copilots to improve payment reliability."
-        ),
-        "business_impact": 4.5,
-        "feasibility": 4.0,
-        "urgency": 4.5,
-        "strategic_alignment": 5.0,
-    },
-}
-
-INITIATIVE_TEMPLATES = {
-    "T01": [
-        {
-            "name": "Real-Time Fraud Risk Engine",
-            "description": (
-                "Implement real-time transaction risk scoring "
-                "with adaptive fraud detection."
-            ),
-            "expected_outcome": (
-                "Faster identification and intervention against "
-                "fraudulent transactions."
-            ),
-            "success_metric": (
-                "Reduction in fraud loss and detection latency"
-            ),
-            "implementation_phase": "Phase 1",
-        },
-        {
-            "name": "AI Fraud Investigation Copilot",
-            "description": (
-                "Assist fraud analysts with case summarisation, "
-                "pattern discovery and investigation workflows."
-            ),
-            "expected_outcome": (
-                "Reduced analyst investigation time."
-            ),
-            "success_metric": (
-                "Reduction in average fraud investigation time"
-            ),
-            "implementation_phase": "Phase 2",
-        },
-    ],
-    "T02": [
-        {
-            "name": "AI Lending Document Intelligence",
-            "description": (
-                "Automate extraction and validation of lending "
-                "documents."
-            ),
-            "expected_outcome": (
-                "Reduced manual document-processing effort."
-            ),
-            "success_metric": (
-                "Reduction in lending processing time"
-            ),
-            "implementation_phase": "Phase 1",
-        },
-        {
-            "name": "Explainable Lending Decision Support",
-            "description": (
-                "Provide explainable AI-assisted underwriting "
-                "recommendations."
-            ),
-            "expected_outcome": (
-                "Faster and more consistent lending decisions."
-            ),
-            "success_metric": (
-                "Reduction in decision turnaround time"
-            ),
-            "implementation_phase": "Phase 2",
-        },
-    ],
-    "T03": [
-        {
-            "name": "AI Customer Support Assistant",
-            "description": (
-                "Deploy an AI assistant for common customer "
-                "support interactions."
-            ),
-            "expected_outcome": (
-                "Faster customer response and resolution."
-            ),
-            "success_metric": (
-                "Reduction in average resolution time"
-            ),
-            "implementation_phase": "Phase 1",
-        },
-        {
-            "name": "Intelligent Complaint Routing",
-            "description": (
-                "Automatically classify complaints and route "
-                "cases to the appropriate teams."
-            ),
-            "expected_outcome": (
-                "Improved complaint handling efficiency."
-            ),
-            "success_metric": (
-                "Reduction in complaint routing time"
-            ),
-            "implementation_phase": "Phase 2",
-        },
-    ],
-    "T04": [
-        {
-            "name": "Governed Financial Data Layer",
-            "description": (
-                "Create a governed data layer for customer "
-                "financial information."
-            ),
-            "expected_outcome": (
-                "More consistent and accessible customer data."
-            ),
-            "success_metric": (
-                "Improvement in data-quality coverage"
-            ),
-            "implementation_phase": "Phase 1",
-        },
-    ],
-    "T05": [
-        {
-            "name": "Responsible AI Control Framework",
-            "description": (
-                "Create AI inventory, risk classification, "
-                "monitoring and explainability controls."
-            ),
-            "expected_outcome": (
-                "Improved visibility and control over AI risks."
-            ),
-            "success_metric": (
-                "Percentage of AI systems covered by governance controls"
-            ),
-            "implementation_phase": "Phase 1",
-        },
-        {
-            "name": "AI Incident Management",
-            "description": (
-                "Establish a process for detecting, recording "
-                "and managing AI-related incidents."
-            ),
-            "expected_outcome": (
-                "Faster identification and response to AI risks."
-            ),
-            "success_metric": (
-                "AI incident detection and resolution time"
-            ),
-            "implementation_phase": "Phase 2",
-        },
-    ],
-    "T06": [
-        {
-            "name": "Payment Operations Intelligence",
-            "description": (
-                "Use anomaly detection and operational intelligence "
-                "to identify payment-service issues."
-            ),
-            "expected_outcome": (
-                "Improved payment reliability and operational response."
-            ),
-            "success_metric": (
-                "Reduction in payment incident resolution time"
-            ),
-            "implementation_phase": "Phase 1",
-        },
-        {
-            "name": "Operations Copilot",
-            "description": (
-                "Provide operations teams with AI-assisted "
-                "incident analysis and resolution guidance."
-            ),
-            "expected_outcome": (
-                "Faster operational decision-making."
-            ),
-            "success_metric": (
-                "Reduction in operational resolution time"
-            ),
-            "implementation_phase": "Phase 2",
-        },
-    ],
-}
+def get_industry_evidence(db: Session, organisation: Organisation):
+    """Return only evidence explicitly tagged for the organisation's industry."""
+    all_records = db.query(Evidence).order_by(Evidence.id).all()
+    return filter_evidence_for_industry(all_records, organisation.industry)
 
 
-def build_initiative_context(
-    organisation: Organisation,
-    opportunity: Opportunity,
-) -> str:
-    """Build context for tailoring an initiative."""
+def get_applicable_dimensions(db: Session, organisation: Organisation):
+    dimensions = db.query(TransformationDimension).order_by(
+        TransformationDimension.external_id
+    ).all()
+    return select_applicable_dimensions(dimensions, organisation.industry)
 
-    sections = [
-        f"Relevant opportunity: {opportunity.title}",
-        f"Opportunity description: {opportunity.description}",
-    ]
 
-    fields = {
-        "Business goals": organisation.goals or [],
-        "Challenges": organisation.challenges or [],
-        "Processes": organisation.processes or [],
-        "Technology": organisation.technology or [],
-        "Constraints": organisation.constraints or [],
+def _evidence_for_dimension(evidence_records, dimension):
+    domains = {str(value).strip().casefold() for value in (dimension.evidence_domains or [])}
+    if not domains:
+        return []
+    return [record for record in evidence_records if record.domain.strip().casefold() in domains]
+
+
+def create_analysis_run(db: Session, organisation: Organisation):
+    run = AnalysisRun(
+        organisation_id=organisation.id,
+        model_used="deterministic-evidence-engine",
+        analysis_version=ANALYSIS_VERSION,
+        status="completed",
+    )
+    db.add(run)
+    db.flush()
+    return run
+
+
+def create_strategic_issues(db: Session, organisation: Organisation):
+    created_issues = []
+    industry_evidence = get_industry_evidence(db, organisation)
+    dimensions = get_applicable_dimensions(db, organisation)
+
+    for dimension in dimensions:
+        evidence = _evidence_for_dimension(industry_evidence, dimension)
+        if not evidence:
+            # No relevant, industry-tagged evidence means no recommendation.
+            continue
+
+        issue_data = analyse_dimension(dimension, evidence, organisation)
+        existing = (
+            db.query(StrategicIssue)
+            .filter(
+                StrategicIssue.organisation_id == organisation.id,
+                StrategicIssue.title == issue_data["title"],
+            )
+            .first()
+        )
+        if existing:
+            existing.description = issue_data["description"]
+            existing.rationale = issue_data["rationale"]
+            existing.severity = issue_data["severity"]
+            existing.urgency = issue_data["urgency"]
+            existing.evidence = evidence
+            existing.model_used = "deterministic-evidence-engine"
+            existing.analysis_version = ANALYSIS_VERSION
+            created_issues.append(existing)
+            continue
+
+        issue = StrategicIssue(
+            organisation_id=organisation.id,
+            title=issue_data["title"],
+            description=issue_data["description"],
+            rationale=issue_data["rationale"],
+            severity=issue_data["severity"],
+            urgency=issue_data["urgency"],
+            model_used="deterministic-evidence-engine",
+            analysis_version=ANALYSIS_VERSION,
+        )
+        issue.evidence = evidence
+        db.add(issue)
+        db.flush()
+        created_issues.append(issue)
+
+    db.commit()
+    return created_issues
+
+
+def create_opportunities(db: Session, organisation: Organisation, issues: list[StrategicIssue]):
+    created_opportunities = []
+    dimensions = {
+        dimension.name: dimension
+        for dimension in get_applicable_dimensions(db, organisation)
     }
 
+    for issue in issues:
+        dimension = dimensions.get(issue.title)
+        if dimension is None or not issue.evidence:
+            continue
+
+        opportunity_data = generate_opportunity(dimension, issue, organisation)
+        existing = (
+            db.query(Opportunity)
+            .filter(
+                Opportunity.organisation_id == organisation.id,
+                Opportunity.strategic_issue_id == issue.id,
+                Opportunity.title == opportunity_data["title"],
+            )
+            .first()
+        )
+        if existing:
+            existing.transformation_dimension_id = dimension.id
+            existing.description = opportunity_data["description"]
+            existing.rationale = opportunity_data["rationale"]
+            existing.business_impact = opportunity_data["business_impact"]
+            existing.feasibility = opportunity_data["feasibility"]
+            existing.urgency = opportunity_data["urgency"]
+            existing.strategic_alignment = opportunity_data["strategic_alignment"]
+            existing.evidence_confidence = opportunity_data["evidence_confidence"]
+            existing.evidence = list(issue.evidence)
+            existing.model_used = "deterministic-evidence-engine"
+            existing.analysis_version = ANALYSIS_VERSION
+            created_opportunities.append(existing)
+            continue
+
+        opportunity = Opportunity(
+            organisation_id=organisation.id,
+            strategic_issue_id=issue.id,
+            transformation_dimension_id=dimension.id,
+            title=opportunity_data["title"],
+            description=opportunity_data["description"],
+            rationale=opportunity_data["rationale"],
+            business_impact=opportunity_data["business_impact"],
+            feasibility=opportunity_data["feasibility"],
+            urgency=opportunity_data["urgency"],
+            strategic_alignment=opportunity_data["strategic_alignment"],
+            evidence_confidence=opportunity_data["evidence_confidence"],
+            model_used="deterministic-evidence-engine",
+            analysis_version=ANALYSIS_VERSION,
+        )
+        opportunity.evidence = list(issue.evidence)
+        db.add(opportunity)
+        db.flush()
+        created_opportunities.append(opportunity)
+
+    db.commit()
+    return created_opportunities
+
+
+def build_initiative_context(organisation: Organisation, opportunity: Opportunity) -> str:
+    sections = [f"Opportunity: {opportunity.title}"]
+    fields = {
+        "Goals": getattr(organisation, "goals", None) or [],
+        "Challenges": getattr(organisation, "challenges", None) or [],
+        "Processes": getattr(organisation, "processes", None) or [],
+        "Technology": getattr(organisation, "technology", None) or [],
+        "Constraints": getattr(organisation, "constraints", None) or [],
+    }
     for label, values in fields.items():
         if values:
-            sections.append(
-                f"{label}: " + "; ".join(str(value) for value in values)
-            )
-
+            sections.append(f"{label}: " + "; ".join(str(value) for value in values))
+    evidence_ids = [item.external_id for item in (opportunity.evidence or [])]
+    sections.append("Supporting evidence: " + (", ".join(evidence_ids) if evidence_ids else "none"))
     return "\n".join(sections)
 
 
@@ -374,380 +198,71 @@ def create_initiatives(
     analysis_run: AnalysisRun,
 ):
     created_initiatives = []
-
     for opportunity in opportunities:
-
-        dimension = opportunity.transformation_dimension
-
-        if not dimension:
+        if not opportunity.evidence:
+            continue
+        name = f"Pilot: {opportunity.title}"
+        existing = (
+            db.query(Initiative)
+            .filter(
+                Initiative.organisation_id == organisation.id,
+                Initiative.opportunity_id == opportunity.id,
+                Initiative.name == name,
+            )
+            .first()
+        )
+        context = build_initiative_context(organisation, opportunity)
+        evidence_ids = ", ".join(item.external_id for item in opportunity.evidence)
+        description = (
+            f"Validate the opportunity '{opportunity.title}' using a bounded pilot. "
+            f"The pilot should test feasibility, operational fit, and relevant safeguards.\n{context}"
+        )
+        expected_outcome = (
+            f"Evidence-based decision on whether to scale '{opportunity.title}', "
+            f"using baseline and post-pilot measures. Supporting evidence: {evidence_ids}."
+        )
+        if existing:
+            existing.description = description
+            existing.expected_outcome = expected_outcome
+            existing.model_used = "deterministic-evidence-engine"
+            existing.analysis_version = ANALYSIS_VERSION
+            created_initiatives.append(existing)
             continue
 
-        templates = INITIATIVE_TEMPLATES.get(
-            dimension.external_id,
-            [],
+        initiative = Initiative(
+            organisation_id=organisation.id,
+            opportunity_id=opportunity.id,
+            name=name,
+            description=description,
+            expected_outcome=expected_outcome,
+            success_metric="Define a baseline, then measure the agreed outcome and risk indicators",
+            implementation_phase="Phase 1 - Validate",
+            status="proposed",
+            model_used="deterministic-evidence-engine",
+            analysis_version=ANALYSIS_VERSION,
         )
-
-        for template in templates:
-
-            existing = (
-                db.query(Initiative)
-                .filter(
-                    Initiative.organisation_id == organisation.id,
-                    Initiative.opportunity_id == opportunity.id,
-                    Initiative.name == template["name"],
-                )
-                .first()
-            )
-
-            if existing:
-                created_initiatives.append(existing)
-                continue
-
-            initiative = Initiative(
-                organisation_id=organisation.id,
-                opportunity_id=opportunity.id,
-                name=template["name"],
-                
-                description=(
-                    f"{template['description']} "
-                    f"Context: {build_initiative_context(organisation, opportunity)}"
-                ),
-                expected_outcome=(
-                    f"{template['expected_outcome']} "
-                    f"This initiative supports the opportunity "
-                    f"'{opportunity.title}' and the organisation's stated goals."
-                ),
-
-                success_metric=template["success_metric"],
-                implementation_phase=template["implementation_phase"],
-                status="proposed",
-                model_used="deterministic-rule-engine",
-                analysis_version=ANALYSIS_VERSION,
-            )
-
-            db.add(initiative)
-            db.flush()
-
-            created_initiatives.append(initiative)
+        db.add(initiative)
+        db.flush()
+        created_initiatives.append(initiative)
 
     db.commit()
-
     return created_initiatives
 
-def create_analysis_run(
-    db: Session,
-    organisation: Organisation,
-):
-    run = AnalysisRun(
-        organisation_id=organisation.id,
-        model_used="deterministic-rule-engine",
-        analysis_version=ANALYSIS_VERSION,
-        status="completed",
-    )
 
-    db.add(run)
-    db.flush()
-
-    return run
-
-def get_dimension_by_external_id(
-    db: Session,
-    external_id: str,
-):
-    return (
-        db.query(TransformationDimension)
-        .filter(
-            TransformationDimension.external_id == external_id
-        )
-        .first()
-    )
-
-def get_relevant_issue_domains(organisation: Organisation) -> set[str]:
-    """Select issue domains using the organisation's profile."""
-
-    profile_fields = [
-        organisation.challenges or [],
-        organisation.goals or [],
-        organisation.processes or [],
-        organisation.technology or [],
-        organisation.constraints or [],
-    ]
-
-    profile_text = " ".join(
-        str(item)
-        for field in profile_fields
-        for item in field
-    ).lower()
-
-    if not profile_text.strip():
-        return set(DOMAIN_ISSUES.keys())
-
-    domain_keywords = {
-        "FRAUD": [
-            "fraud", "risk", "scam", "suspicious", "payment security",
-            "financial loss", "transaction monitoring",
-        ],
-        "LENDING": [
-            "loan", "lending", "credit", "underwriting",
-            "loan processing", "credit decision",
-        ],
-        "CX": [
-            "customer support", "customer service", "customer experience",
-            "complaint", "support volume", "customer satisfaction",
-        ],
-        "DATA": [
-            "data", "fragmented", "silo", "integration",
-            "data quality", "customer records",
-        ],
-        "GOVERNANCE": [
-            "compliance", "regulation", "regulatory", "audit",
-            "governance", "privacy", "policy",
-        ],
-        "AI": [
-            "artificial intelligence", "machine learning", "automation",
-            "manual process", "operational efficiency", "ai adoption",
-        ],
-    }
-
-    relevant_domains = {
-        domain
-        for domain, keywords in domain_keywords.items()
-        if any(keyword in profile_text for keyword in keywords)
-        and domain in DOMAIN_ISSUES
-    }
-
-    # Preserve useful output for profiles whose wording doesn't match
-    # the initial keyword rules.
-    return relevant_domains or set(DOMAIN_ISSUES.keys())
-
-
-
-def create_strategic_issues(
-    db: Session,
-    organisation: Organisation,
-):
-    created_issues = []
-
-    relevant_domains = get_relevant_issue_domains(organisation)
-
-    for domain, config in DOMAIN_ISSUES.items():
-        if domain not in relevant_domains:
-            continue
-
-        evidence = get_evidence_for_domain(
-            db,
-            domain,
-        )
-
-        if not evidence:
-            continue
-
-        existing = (
-            db.query(StrategicIssue)
-            .filter(
-                StrategicIssue.organisation_id == organisation.id,
-                StrategicIssue.title == config["title"],
-            )
-            .first()
-        )
-
-        if existing:
-            created_issues.append(existing)
-            continue
-
-        issue = StrategicIssue(
-            organisation_id=organisation.id,
-            title=config["title"],
-            description=config["description"],
-            rationale=(
-                f"Supported by {len(evidence)} external evidence "
-                f"records from the {domain} research domain."
-            ),
-            severity=config["severity"],
-            urgency=config["urgency"],
-            model_used="deterministic-rule-engine",
-            analysis_version=ANALYSIS_VERSION,
-        )
-
-        issue.evidence = evidence
-
-        db.add(issue)
-        db.flush()
-
-        created_issues.append(issue)
-
-    db.commit()
-
-    return created_issues
-
-
-def build_opportunity_context(organisation: Organisation) -> str:
-    """Build organisation-specific context for an opportunity."""
-
-    fields = {
-        "Business goals": organisation.goals or [],
-        "Current challenges": organisation.challenges or [],
-        "Current processes": organisation.processes or [],
-        "Technology and systems": organisation.technology or [],
-        "Business constraints": organisation.constraints or [],
-    }
-
-    sections = []
-
-    for label, values in fields.items():
-        if values:
-            sections.append(
-                f"{label}: " + "; ".join(str(value) for value in values)
-            )
-
-    return "\n".join(sections)
-
-def create_opportunities(
-    db: Session,
-    organisation: Organisation,
-    issues: list[StrategicIssue],
-):
-    created_opportunities = []
-
-    for issue in issues:
-
-        # Find the dimension associated with this issue.
-        dimension_id = None
-
-        for domain, config in DOMAIN_ISSUES.items():
-            if config["title"] == issue.title:
-                dimension = get_dimension_by_external_id(
-                    db,
-                    config["dimension"],
-                )
-
-                if dimension:
-                    dimension_id = dimension.id
-
-                template = OPPORTUNITY_TEMPLATES.get(
-                    config["dimension"]
-                )
-
-                break
-        else:
-            continue
-
-        if not template:
-            continue
-
-        existing = (
-            db.query(Opportunity)
-            .filter(
-                Opportunity.organisation_id == organisation.id,
-                Opportunity.strategic_issue_id == issue.id,
-                Opportunity.title == template["title"],
-            )
-            .first()
-        )
-
-        if existing:
-            created_opportunities.append(existing)
-            continue
-
-        opportunity = Opportunity(
-            organisation_id=organisation.id,
-            strategic_issue_id=issue.id,
-            transformation_dimension_id=dimension_id,
-            title=template["title"],
-            
-            description=(
-                f"{template['description']} "
-                + (
-                    f"This opportunity is being considered in the context of "
-                    f"the organisation's profile: "
-                    f"{build_opportunity_context(organisation)}"
-                    if build_opportunity_context(organisation)
-                    else "Organisation-specific goals and constraints were not provided."
-                )
-            ),
-            rationale=(
-                f"Derived from the strategic issue: {issue.title}. "
-                f"Supported by {len(issue.evidence)} associated evidence records. "
-                + (
-                    f"Relevant organisation context: "
-                    f"{build_opportunity_context(organisation)}"
-                    if build_opportunity_context(organisation)
-                    else "No additional organisation profile context was provided."
-                )
-            ),
-                
-            business_impact=template["business_impact"],
-            feasibility=template["feasibility"],
-            urgency=template["urgency"],
-            strategic_alignment=template["strategic_alignment"],
-            evidence_confidence=round(
-                sum(
-                    evidence.confidence
-                    for evidence in issue.evidence
-                )
-                / len(issue.evidence),
-                2,
-            ),
-            model_used="deterministic-rule-engine",
-            analysis_version=ANALYSIS_VERSION,
-        )
-
-        opportunity.evidence = list(issue.evidence)
-
-        db.add(opportunity)
-        db.flush()
-
-        created_opportunities.append(opportunity)
-
-    db.commit()
-
-    return created_opportunities
-
-
-def run_intelligence_analysis(
-    db: Session,
-    organisation: Organisation,
-):
-    analysis_run = create_analysis_run(
-        db,
-        organisation,
-    )
-
-    issues = create_strategic_issues(
-        db,
-        organisation,
-    )
-
+def run_intelligence_analysis(db: Session, organisation: Organisation):
+    analysis_run = create_analysis_run(db, organisation)
+    issues = create_strategic_issues(db, organisation)
     for issue in issues:
         issue.analysis_run_id = analysis_run.id
-
     db.commit()
 
-    opportunities = create_opportunities(
-        db,
-        organisation,
-        issues,
-    )
-
+    opportunities = create_opportunities(db, organisation, issues)
     for opportunity in opportunities:
         opportunity.analysis_run_id = analysis_run.id
-
     db.commit()
 
-    ranked_opportunities = (
-        calculate_and_rank_opportunities(
-            db,
-            opportunities,
-        )
-    )
-
-    initiatives = create_initiatives(
-        db,
-        organisation,
-        ranked_opportunities,
-        analysis_run,
-    )
-
+    ranked_opportunities = calculate_and_rank_opportunities(db, opportunities)
+    initiatives = create_initiatives(db, organisation, ranked_opportunities, analysis_run)
     return {
         "organisation": organisation,
         "analysis_run": analysis_run,
