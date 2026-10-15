@@ -1,26 +1,32 @@
 [
   {
     "id": "T01",
-    "name": "Intelligent Fraud & Risk"
+    "name": "Intelligent Fraud & Risk",
+    "industries": ["FinTech"]
   },
   {
     "id": "T02",
-    "name": "AI-Assisted Lending"
+    "name": "AI-Assisted Lending",
+    "industries": ["FinTech"]
   },
   {
     "id": "T03",
-    "name": "Customer Intelligence"
+    "name": "Customer Intelligence",
+    "industries": ["FinTech"]
   },
   {
     "id": "T04",
-    "name": "Financial Data Platform"
+    "name": "Financial Data Platform",
+    "industries": ["FinTech"]
   },
   {
     "id": "T05",
-    "name": "Responsible AI Governance"
+    "name": "Responsible AI Governance",
+    "industries": ["FinTech"]
   },
   {
     "id": "T06",
-    "name": "Payment Operations & Resilience"
+    "name": "Payment Operations & Resilience",
+    "industries": ["FinTech"]
   }
 ]

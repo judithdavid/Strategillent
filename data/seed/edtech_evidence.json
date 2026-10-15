@@ -1,0 +1,67 @@
+
+[
+  {
+    "id": "EDU001",
+    "domain": "AI",
+    "title": "Generative AI should support learning goals",
+    "source_name": "OECD",
+    "source_type": "International organization report",
+    "publication_date": "2026-01-19",
+    "url": "https://www.oecd.org/en/publications/oecd-digital-education-outlook-2026_062a7394-en.html",
+    "claim": "Generative AI can support learning when its use is guided by clear teaching principles; completing a task successfully does not necessarily mean that learning has improved.",
+    "evidence": "The OECD Digital Education Outlook 2026 discusses the conditions for effective use of generative AI in education, including pedagogical guidance, learning objectives, privacy, safety, transparency and age-appropriateness.",
+    "strategic_implication": "Evaluate AI-assisted grading, tutoring and learning support against educational outcomes and teacher-reviewed quality, not just task completion or automation volume.",
+    "confidence": 3,
+    "relevance": 3,
+    "tags": ["generative AI", "learning outcomes", "tutoring", "assessment"],
+    "industries": ["EdTech", "Education"]
+  },
+  {
+    "id": "EDU002",
+    "domain": "GOVERNANCE",
+    "title": "Protect learner privacy when adopting generative AI",
+    "source_name": "UNESCO",
+    "source_type": "International organization guidance",
+    "publication_date": "2023-09-07",
+    "url": "https://www.unesco.org/en/articles/guidance-generative-ai-education-and-research",
+    "claim": "Educational adoption of generative AI requires safeguards for data privacy and a human-centred approach appropriate to learners' ages and needs.",
+    "evidence": "UNESCO's guidance on generative AI in education and research discusses data privacy, age-appropriate use, human agency, inclusion, equity and the need to validate educational tools.",
+    "strategic_implication": "Establish rules for student-data handling, age-appropriate access, human oversight and review of AI tools before expanding AI-enabled educational services.",
+    "confidence": 3,
+    "relevance": 3,
+    "tags": ["student privacy", "responsible AI", "safeguards", "age appropriateness"],
+    "industries": ["EdTech", "Education"]
+  },
+  {
+    "id": "EDU003",
+    "domain": "AI",
+    "title": "Keep educators involved in AI-enabled teaching",
+    "source_name": "U.S. Department of Education, Office of Educational Technology",
+    "source_type": "Government report",
+    "publication_date": "2023-05-01",
+    "url": "https://www.ed.gov/sites/ed/files/documents/ai-report/ai-report.pdf",
+    "claim": "AI adoption in education should be designed around teaching and learning needs, with attention to human involvement and the risks of automated systems.",
+    "evidence": "The U.S. Department of Education's 2023 report examines opportunities and risks associated with AI in teaching and learning and provides recommendations for educational technology design and implementation.",
+    "strategic_implication": "Design grading and student-support workflows so that educators can review consequential AI outputs, correct errors and retain responsibility for important educational decisions.",
+    "confidence": 3,
+    "relevance": 2,
+    "tags": ["teacher oversight", "AI-assisted grading", "human review", "teaching"],
+    "industries": ["EdTech", "Education"]
+  },
+  {
+    "id": "EDU004",
+    "domain": "DATA",
+    "title": "Build a coherent and governed digital education ecosystem",
+    "source_name": "OECD",
+    "source_type": "International organization report",
+    "publication_date": "2023-12-13",
+    "url": "https://www.oecd.org/en/publications/oecd-digital-education-outlook-2023_c74f03de-en.html",
+    "claim": "Digital education transformation depends on how educational systems, data, tools and governance work together, including attention to privacy, equity and interoperability.",
+    "evidence": "The OECD Digital Education Outlook 2023 examines education management information systems, learning management systems, digital assessment platforms and the governance of education data and technology.",
+    "strategic_implication": "Assess integration between the LMS, student information systems and assessment tools; define data ownership, access controls, interoperability requirements and privacy safeguards before building new analytics.",
+    "confidence": 3,
+    "relevance": 3,
+    "tags": ["LMS", "student information systems", "interoperability", "data governance"],
+    "industries": ["EdTech", "Education"]
+  }
+]
