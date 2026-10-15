@@ -39,6 +39,11 @@ class TransformationDimension(Base):
         default=list,
     )
 
+    industries: Mapped[list[str]] = mapped_column(
+        JSON,
+        default=list,
+        nullable=False,
+    )
     opportunities = relationship(
         "Opportunity",
         back_populates="transformation_dimension",

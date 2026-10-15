@@ -13,6 +13,7 @@ from app.models import (
 )
 
 
+
 # ---------------------------------------------------------
 # Paths
 # ---------------------------------------------------------
@@ -26,6 +27,7 @@ SEED_DIR = PROJECT_ROOT / "data" / "seed"
 ORGANISATION_FILE = SEED_DIR / "organisation.json"
 EVIDENCE_FILE = SEED_DIR / "evidence.json"
 TRANSFORMATION_FILE = SEED_DIR / "transformation_dimensions.json"
+EDTECH_EVIDENCE_FILE = SEED_DIR / "edtech_evidence.json"
 
 
 # ---------------------------------------------------------
@@ -271,41 +273,36 @@ def seed_transformation_dimensions(
     dimensions: list[dict],
 ):
     created = 0
-    skipped = 0
+    updated = 0
 
     for item in dimensions:
-
         external_id = item["id"]
+        industries = item.get("industries") or ["FinTech"]
 
         existing = (
-            db.query(
-                TransformationDimension
-            )
+            db.query(TransformationDimension)
             .filter(
-                TransformationDimension.external_id
-                == external_id
+                TransformationDimension.external_id == external_id
             )
             .first()
         )
 
         if existing:
-            skipped += 1
+            # Update applicability without overwriting the
+            # existing dimension's description or relationships.
+            existing.industries = industries
+            updated += 1
             continue
 
         dimension = TransformationDimension(
             external_id=external_id,
             name=item["name"],
-            description=item.get(
-                "description"
-            ),
-            evidence_domains=item.get(
-                "evidence_domains",
-                [],
-            ),
+            description=item.get("description"),
+            evidence_domains=item.get("evidence_domains", []),
             candidate_initiatives=item.get(
-                "candidate_initiatives",
-                [],
+                "candidate_initiatives", []
             ),
+            industries=industries,
         )
 
         db.add(dimension)
@@ -313,7 +310,8 @@ def seed_transformation_dimensions(
 
     db.flush()
 
-    return created, skipped
+    return created, updated
+
 
 
 # ---------------------------------------------------------
@@ -332,8 +330,11 @@ def seed_database(db: Session):
         ORGANISATION_FILE
     )
 
-    evidence_records = load_json(
-        EVIDENCE_FILE
+    fintech_evidence_records = load_json(EVIDENCE_FILE)
+    edtech_evidence_records = load_json(EDTECH_EVIDENCE_FILE)
+
+    evidence_records = (
+        fintech_evidence_records + edtech_evidence_records
     )
 
     transformation_dimensions = load_json(
@@ -394,7 +395,7 @@ def seed_database(db: Session):
     # Transformation dimensions
     # -----------------------------------------------------
 
-    dimensions_created, dimensions_skipped = (
+    dimensions_created, dimensions_updated = (
         seed_transformation_dimensions(
             db,
             transformation_dimensions,
@@ -408,7 +409,7 @@ def seed_database(db: Session):
 
     print(
         f"Transformation dimensions skipped: "
-        f"{dimensions_skipped}"
+        f"{dimensions_updated}"
     )
 
     # -----------------------------------------------------

@@ -67,6 +67,22 @@ def test_get_evidence_filters_by_industry():
     )
 
 
+# def test_edtech_filter_excludes_fintech_only_evidence():
+#     response = client.get(
+#         "/api/research/evidence",
+#         params={"industry": "EdTech"},
+#     )
+
+#     assert response.status_code == 200
+
+#     data = response.json()
+
+#     assert all(
+#         "EdTech" in item.get("industries", [])
+#         for item in data
+#     )
+
+
 def test_edtech_filter_excludes_fintech_only_evidence():
     response = client.get(
         "/api/research/evidence",
@@ -77,10 +93,21 @@ def test_edtech_filter_excludes_fintech_only_evidence():
 
     data = response.json()
 
+    # The EdTech research pack should now return evidence.
+    assert len(data) > 0
+
+    # Every returned record must explicitly apply to EdTech.
     assert all(
         "EdTech" in item.get("industries", [])
         for item in data
     )
+
+    # FinTech-only evidence must not leak into the results.
+    assert all(
+        "FinTech" not in item.get("industries", [])
+        for item in data
+    )
+
 
 
 def test_get_evidence_filters_by_domain_and_industry():
