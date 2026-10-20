@@ -7,6 +7,7 @@ from app.api.organisations import router as organisations_router
 from app.api.research import router as research_router
 from app.api.intelligence import router as intelligence_router
 from app.api.questions import router as questions_router
+from app.api.web_research import router as web_research_router
 
 setup_logging()
 
@@ -29,6 +30,7 @@ app.include_router(organisations_router)
 app.include_router(research_router)
 app.include_router(intelligence_router)
 app.include_router(questions_router)
+app.include_router(web_research_router)
 
 @app.get("/")
 def root():
