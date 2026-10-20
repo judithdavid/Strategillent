@@ -67,7 +67,7 @@ def create_analysis_run(db: Session, organisation: Organisation):
         organisation_id=organisation.id,
         model_used="deterministic-evidence-engine",
         analysis_version=ANALYSIS_VERSION,
-        status="completed",
+        status="running",
     )
     db.add(run)
     db.flush()
@@ -120,7 +120,7 @@ def create_strategic_issues(db: Session, organisation: Organisation):
         db.flush()
         created_issues.append(issue)
 
-    db.commit()
+    # db.commit()
     return created_issues
 
 
@@ -181,7 +181,7 @@ def create_opportunities(db: Session, organisation: Organisation, issues: list[S
         db.flush()
         created_opportunities.append(opportunity)
 
-    db.commit()
+    # db.commit()
     return created_opportunities
 
 
@@ -256,28 +256,61 @@ def create_initiatives(
         db.flush()
         created_initiatives.append(initiative)
 
-    db.commit()
+    # db.commit()
     return created_initiatives
 
 
 def run_intelligence_analysis(db: Session, organisation: Organisation):
-    analysis_run = create_analysis_run(db, organisation)
-    issues = create_strategic_issues(db, organisation)
-    for issue in issues:
-        issue.analysis_run_id = analysis_run.id
-    db.commit()
+    try:
+        analysis_run = create_analysis_run(db, organisation)
 
-    opportunities = create_opportunities(db, organisation, issues)
-    for opportunity in opportunities:
-        opportunity.analysis_run_id = analysis_run.id
-    db.commit()
+        issues = create_strategic_issues(db, organisation)
+        for issue in issues:
+            issue.analysis_run_id = analysis_run.id
 
-    ranked_opportunities = calculate_and_rank_opportunities(db, opportunities)
-    initiatives = create_initiatives(db, organisation, ranked_opportunities, analysis_run)
-    return {
-        "organisation": organisation,
-        "analysis_run": analysis_run,
-        "issues": issues,
-        "opportunities": ranked_opportunities,
-        "initiatives": initiatives,
-    }
+        opportunities = create_opportunities(db, organisation, issues)
+        for opportunity in opportunities:
+            opportunity.analysis_run_id = analysis_run.id
+
+        ranked_opportunities = calculate_and_rank_opportunities(
+            db, opportunities
+        )
+
+        initiatives = create_initiatives(
+            db,
+            organisation,
+            ranked_opportunities,
+            analysis_run,
+        )
+
+        # Mark success only after every pipeline stage has completed.
+        analysis_run.status = "completed"
+        db.commit()
+
+        return {
+            "organisation": organisation,
+            "analysis_run": analysis_run,
+            "issues": issues,
+            "opportunities": ranked_opportunities,
+            "initiatives": initiatives,
+        }
+
+    except Exception:
+        # Undo all uncommitted changes, including updates to existing records.
+        db.rollback()
+
+        # Record the failed run in a separate transaction.
+        try:
+            failed_run = AnalysisRun(
+                organisation_id=organisation.id,
+                model_used="deterministic-evidence-engine",
+                analysis_version=ANALYSIS_VERSION,
+                status="failed",
+            )
+            db.add(failed_run)
+            db.commit()
+        except Exception:
+            # Do not let failure-recording errors hide the original exception.
+            db.rollback()
+
+        raise

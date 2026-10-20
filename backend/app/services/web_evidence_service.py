@@ -113,10 +113,29 @@ def search_and_store_web_evidence(
                 )
                 db.add(evidence)
                 created += 1
+            
+
             else:
-                # Refresh source content while preserving the existing record.
+                # Do not broaden an existing evidence record's classification
+                # just because another search returned the same URL.
+                existing_industries = evidence.industries or []
+                existing_domain = (evidence.domain or "").strip().casefold()
+
+                if (
+                    industry.casefold() not in {
+                        value.strip().casefold()
+                        for value in existing_industries
+                        if isinstance(value, str)
+                    }
+                    or existing_domain != domain.casefold()
+                ):
+                    # The same URL may support multiple claims or domains.
+                    # Preserve the original record and classification.
+                    skipped += 1
+                    continue
+
+                # Refresh content only when the existing classification matches.
                 evidence.title = title
-                evidence.domain = domain
                 evidence.research_source_id = source.id
                 evidence.url = url
                 evidence.claim = content[:5000]
@@ -127,12 +146,14 @@ def search_and_store_web_evidence(
                     "context before using it in a recommendation."
                 )
                 evidence.tags = list(
-                    dict.fromkeys([*(evidence.tags or []), "web_search", "unverified"])
-                )
-                evidence.industries = list(
-                    dict.fromkeys([*(evidence.industries or []), industry])
+                    dict.fromkeys([
+                        *(evidence.tags or []),
+                        "web_search",
+                        "unverified",
+                    ])
                 )
                 updated += 1
+
 
         db.commit()
 

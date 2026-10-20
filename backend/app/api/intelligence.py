@@ -1,13 +1,14 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models import Organisation
+from app.models import Organisation, AnalysisRun
 from app.schemas.analysis import IntelligenceResponse
-from app.services.intelligence_service import (
-    run_intelligence_analysis,
-)
+from app.services.intelligence_service import run_intelligence_analysis
 
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/intelligence",
@@ -25,9 +26,7 @@ def run_analysis(
 ):
     organisation = (
         db.query(Organisation)
-        .filter(
-            Organisation.id == organisation_id
-        )
+        .filter(Organisation.id == organisation_id)
         .first()
     )
 
@@ -37,19 +36,27 @@ def run_analysis(
             detail="Organisation not found",
         )
 
-    result = run_intelligence_analysis(
-        db,
-        organisation,
-    )
+    try:
+        result = run_intelligence_analysis(db, organisation)
+    except Exception as exc:
+        logger.exception(
+            "Intelligence analysis failed for organisation_id=%s",
+            organisation_id,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Intelligence analysis failed. Please try again.",
+        ) from exc
 
     return {
-    "organisation_id": organisation.id,
-    "organisation_name": organisation.name,
-    "analysis_run_id": result["analysis_run"].id,
-    "strategic_issues": result["issues"],
-    "opportunities": result["opportunities"],
-    "initiatives": result["initiatives"],
+        "organisation_id": organisation.id,
+        "organisation_name": organisation.name,
+        "analysis_run_id": result["analysis_run"].id,
+        "strategic_issues": result["issues"],
+        "opportunities": result["opportunities"],
+        "initiatives": result["initiatives"],
     }
+
 
 @router.get(
     "/{organisation_id}",
@@ -61,9 +68,7 @@ def get_intelligence(
 ):
     organisation = (
         db.query(Organisation)
-        .filter(
-            Organisation.id == organisation_id
-        )
+        .filter(Organisation.id == organisation_id)
         .first()
     )
 
@@ -85,21 +90,20 @@ def get_intelligence(
     )
 
     initiatives = []
-
     for opportunity in opportunities:
-        initiatives.extend(
-            opportunity.initiatives
-        )
+        initiatives.extend(opportunity.initiatives)
 
-    latest_run = None
-
-    if issues:
-        latest_run = issues[-1].analysis_run_id
+    latest_run = (
+        db.query(AnalysisRun)
+        .filter(AnalysisRun.organisation_id == organisation.id)
+        .order_by(AnalysisRun.id.desc())
+        .first()
+    )
 
     return {
         "organisation_id": organisation.id,
         "organisation_name": organisation.name,
-        "analysis_run_id": latest_run,
+        "analysis_run_id": latest_run.id if latest_run else None,
         "strategic_issues": issues,
         "opportunities": opportunities,
         "initiatives": initiatives,
