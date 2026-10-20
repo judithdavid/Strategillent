@@ -45,11 +45,22 @@ def get_applicable_dimensions(db: Session, organisation: Organisation):
 
 
 def _evidence_for_dimension(evidence_records, dimension):
-    domains = {str(value).strip().casefold() for value in (dimension.evidence_domains or [])}
-    if not domains:
-        return []
-    return [record for record in evidence_records if record.domain.strip().casefold() in domains]
+    """Return evidence matching a dimension's declared research domains."""
 
+    allowed_domains = {
+        str(value).strip().casefold()
+        for value in (dimension.evidence_domains or [])
+        if value and str(value).strip()
+    }
+
+    if not allowed_domains:
+        return []
+
+    return [
+        record
+        for record in evidence_records
+        if (record.domain or "").strip().casefold() in allowed_domains
+    ]
 
 def create_analysis_run(db: Session, organisation: Organisation):
     run = AnalysisRun(
