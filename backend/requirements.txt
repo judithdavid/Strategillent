@@ -11,5 +11,5 @@ qdrant-client[fastembed]
 pypdf
 python-docx
 beautifulsoup4
-
+python-multipart
 
