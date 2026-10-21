@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     # Local LLM configuration
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2"
+    
+    qdrant_path: str = "../.qdrant/strategillent"
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
 
     # Online research configuration
     tavily_api_key: str = ""

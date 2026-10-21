@@ -7,7 +7,9 @@ python-dotenv
 requests
 pytest
 httpx
-
-
+qdrant-client[fastembed]
+pypdf
+python-docx
+beautifulsoup4
 
 
