@@ -1,0 +1,98 @@
+{
+  "industries": [
+    {
+      "id": "fintech",
+      "canonical_name": "FinTech",
+      "aliases": [
+        "Fintech",
+        "fintech",
+        "Financial Services",
+        "Financial Technology",
+        "Banking",
+        "Banking & Financial Services",
+        "BFS"
+      ],
+      "parent_id": null
+    },
+    {
+      "id": "edtech",
+      "canonical_name": "Education Technology",
+      "aliases": [
+        "EdTech",
+        "EduTech",
+        "Educational Technology",
+        "Education Technology",
+        "Education Services"
+      ],
+      "parent_id": "education"
+    },
+    {
+      "id": "education",
+      "canonical_name": "Education",
+      "aliases": [
+        "Educational Services"
+      ],
+      "parent_id": null
+    },
+    {
+      "id": "healthcare",
+      "canonical_name": "Healthcare",
+      "aliases": [
+        "HealthTech",
+        "Health Services",
+        "Healthcare & Life Sciences",
+        "Medical Industry"
+      ],
+      "parent_id": null
+    },
+    {
+      "id": "retail",
+      "canonical_name": "Retail",
+      "aliases": [
+        "Retail & Consumer Goods",
+        "Commerce",
+        "Retail Industry"
+      ],
+      "parent_id": null
+    },
+    {
+      "id": "ecommerce",
+      "canonical_name": "E-commerce",
+      "aliases": [
+        "Ecommerce",
+        "E Commerce",
+        "Electronic Commerce",
+        "Online Retail"
+      ],
+      "parent_id": "retail"
+    },
+    {
+      "id": "technology",
+      "canonical_name": "Technology",
+      "aliases": [
+        "IT",
+        "Information Technology",
+        "Software Industry"
+      ],
+      "parent_id": null
+    },
+    {
+      "id": "cloud_computing",
+      "canonical_name": "Cloud Computing",
+      "aliases": [
+        "Cloud Services",
+        "Cloud Infrastructure"
+      ],
+      "parent_id": "technology"
+    },
+    {
+      "id": "manufacturing",
+      "canonical_name": "Manufacturing",
+      "aliases": [
+        "Industrial Manufacturing",
+        "Production Industry"
+      ],
+      "parent_id": null
+    }
+  ]
+}

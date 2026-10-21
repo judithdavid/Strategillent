@@ -1,11 +1,13 @@
+
+"""Pydantic schemas for semantic retrieval endpoints."""
 from pydantic import BaseModel, Field
 
 
 class SemanticSearchRequest(BaseModel):
     query: str = Field(min_length=1, max_length=4000)
-    industry: str = Field(min_length=1, max_length=100)
-    domain: str | None = Field(default=None, max_length=100)
-    limit: int = Field(default=6, ge=1, le=30)
+    limit: int = Field(default=6, ge=1, le=100)
+    industry: str | None = None
+    domain: str | None = None
     include_unverified: bool = True
 
 
@@ -19,6 +21,8 @@ class SemanticSearchResult(BaseModel):
     source_name: str = ""
     source_url: str = ""
     industry: str = ""
+    industry_id: str | None = None
+    industry_ids: list[str] = []
     industries: list[str] = []
     domain: str = ""
     title: str = ""
@@ -30,3 +34,12 @@ class SemanticSearchResult(BaseModel):
 class SemanticSearchResponse(BaseModel):
     query: str
     results: list[SemanticSearchResult]
+
+
+class DocumentIngestionResponse(BaseModel):
+    source_id: str
+    filename: str
+    industry: str
+    industry_id: str
+    chunks_created_or_updated: int
+    characters_extracted: int
