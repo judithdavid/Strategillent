@@ -16,6 +16,7 @@ from app.services.industry_resolution import (
     resolve_industry,
 )
 
+from app.retrieval.ranking import rank_evidence
 
 def _industry_aliases(industry: str) -> list[str]:
     """Compatibility helper retained for existing callers/tests."""
@@ -99,11 +100,15 @@ def semantic_search(
     )
 
     results = []
+
     for point in response.points:
         payload = point.payload or {}
+        semantic_score = float(point.score or 0.0)
+
         results.append({
             "text": payload.get("text", ""),
-            "score": float(point.score or 0.0),
+            "score": semantic_score,  # Preserve legacy semantic score.
+            "semantic_score": semantic_score,
             "record_type": payload.get("record_type"),
             "evidence_id": payload.get("evidence_id"),
             "external_id": payload.get("external_id"),
@@ -116,8 +121,39 @@ def semantic_search(
             "industries": payload.get("industries", []),
             "domain": payload.get("domain", ""),
             "title": payload.get("title", payload.get("source_name", "")),
+            "claim": payload.get("claim", ""),
+            "evidence_text": payload.get(
+                "evidence_text",
+                payload.get("text", ""),
+            ),
+            "strategic_implication": payload.get(
+                "strategic_implication", ""
+            ),
+            "relevance": payload.get("relevance"),
+            "confidence": payload.get("confidence"),
             "chunk_index": payload.get("chunk_index"),
             "tags": payload.get("tags", []),
             "verified": payload.get("verified", False),
         })
-    return results
+
+    semantic_scores = {
+        str(record["external_id"]): record["semantic_score"]
+        for record in results
+        if record.get("external_id") is not None
+    }
+
+    ranked = rank_evidence(
+        query=query,
+        records=results,
+        semantic_scores=semantic_scores,
+        limit=limit,
+    )
+
+    ranked_results = []
+    for item in ranked:
+        record = dict(item.evidence)
+        record["ranking_score"] = item.score
+        record["ranking_components"] = item.components
+        ranked_results.append(record)
+
+    return ranked_results

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models import Organisation, AnalysisRun
+from app.models import AnalysisRun, Organisation
 from app.schemas.analysis import IntelligenceResponse
 from app.services.intelligence_service import run_intelligence_analysis
 
@@ -40,12 +40,12 @@ def run_analysis(
         result = run_intelligence_analysis(db, organisation)
     except Exception as exc:
         logger.exception(
-            "Intelligence analysis failed for organisation_id=%s",
+            "Failed to run intelligence analysis for organisation %s",
             organisation_id,
         )
         raise HTTPException(
             status_code=500,
-            detail="Intelligence analysis failed. Please try again.",
+            detail="Intelligence analysis failed",
         ) from exc
 
     return {
@@ -78,10 +78,9 @@ def get_intelligence(
             detail="Organisation not found",
         )
 
-    issues = organisation.strategic_issues
-
+    issues = list(organisation.strategic_issues or [])
     opportunities = sorted(
-        organisation.opportunities,
+        list(organisation.opportunities or []),
         key=lambda item: (
             item.priority_rank
             if item.priority_rank is not None
@@ -91,7 +90,7 @@ def get_intelligence(
 
     initiatives = []
     for opportunity in opportunities:
-        initiatives.extend(opportunity.initiatives)
+        initiatives.extend(list(opportunity.initiatives or []))
 
     latest_run = (
         db.query(AnalysisRun)

@@ -6,7 +6,6 @@ from sqlalchemy.pool import StaticPool
 
 from app.core.database import Base
 from app.models import (
-    AnalysisRun,
     Evidence,
     Initiative,
     Opportunity,
@@ -34,7 +33,7 @@ def pipeline_db(monkeypatch):
     )
     db = TestSession()
 
-    # Deterministic stand-ins for AI-generated content.
+    # Deterministic stand-in for AI-generated issue analysis.
     def fake_analyse_dimension(dimension, evidence, organisation):
         return {
             "title": dimension.name,
@@ -44,7 +43,19 @@ def pipeline_db(monkeypatch):
             "urgency": 2,
         }
 
-    def fake_generate_opportunity(dimension, issue, organisation):
+    # Accept the filtered evidence passed by the production pipeline.
+    def fake_generate_opportunity(
+        dimension,
+        issue,
+        organisation,
+        evidence_records=None,
+    ):
+        evidence_records = evidence_records or []
+
+        assert evidence_records, (
+            "Opportunity generation must receive filtered evidence"
+        )
+
         return {
             "title": f"Improve {dimension.name}",
             "description": f"Test opportunity for {dimension.name}",
@@ -54,17 +65,27 @@ def pipeline_db(monkeypatch):
             "urgency": 2.0,
             "strategic_alignment": 3.0,
             "evidence_confidence": 1.0,
+            "evidence_ids": [
+                item.external_id
+                for item in evidence_records
+                if getattr(item, "external_id", None)
+            ],
+            "model_used": "test-model",
+            "status": "completed",
         }
 
     monkeypatch.setattr(
-        intelligence_service, "analyse_dimension", fake_analyse_dimension
+        intelligence_service,
+        "analyse_dimension",
+        fake_analyse_dimension,
     )
     monkeypatch.setattr(
-        intelligence_service, "generate_opportunity", fake_generate_opportunity
+        intelligence_service,
+        "generate_opportunity",
+        fake_generate_opportunity,
     )
 
-    # Keep ranking deterministic; the real pipeline still creates and persists
-    # issues, opportunities, evidence relationships, and initiatives.
+    # Keep ranking deterministic while testing persistence and relationships.
     monkeypatch.setattr(
         intelligence_service,
         "calculate_and_rank_opportunities",
@@ -121,7 +142,6 @@ def add_dimension(db, external_id, name, industry_tags, domain):
     return dimension
 
 
-
 @pytest.mark.parametrize(
     ("industry", "expected_evidence_ids", "expected_dimension_ids"),
     [
@@ -132,11 +152,11 @@ def add_dimension(db, external_id, name, industry_tags, domain):
     ],
 )
 def test_full_pipeline_preserves_industry_isolation(
-    pipeline_db, industry, expected_evidence_ids, expected_dimension_ids
+    pipeline_db,
+    industry,
+    expected_evidence_ids,
+    expected_dimension_ids,
 ):
-# def test_full_pipeline_preserves_industry_isolation(
-#     pipeline_db, industry, expected_evidence, expected_dimension
-# ):
     db = pipeline_db
 
     organisation = Organisation(
@@ -149,6 +169,7 @@ def test_full_pipeline_preserves_industry_isolation(
         challenges=[],
         goals=["Improve operational performance"],
         processes=[],
+        # technologies=[],
         technology=[],
         constraints=[],
     )
@@ -160,7 +181,9 @@ def test_full_pipeline_preserves_industry_isolation(
     add_evidence(db, "HLT-E1", ["Healthcare"], "PATIENT_SAFETY")
 
     add_dimension(db, "FIN-D1", "Fraud Risk", ["FinTech"], "FRAUD")
-    add_dimension(db, "EDU-D1", "Learning Outcomes", ["EdTech"], "LEARNING")
+    add_dimension(
+        db, "EDU-D1", "Learning Outcomes", ["EdTech"], "LEARNING"
+    )
     add_dimension(
         db, "HLT-D1", "Patient Safety", ["Healthcare"], "PATIENT_SAFETY"
     )
@@ -175,7 +198,9 @@ def test_full_pipeline_preserves_industry_isolation(
     add_evidence(db, "UNTAGGED-E1", [], "FRAUD")
     db.commit()
 
-    result = intelligence_service.run_intelligence_analysis(db, organisation)
+    result = intelligence_service.run_intelligence_analysis(
+        db, organisation
+    )
 
     assert result["analysis_run"].status == "completed"
 
@@ -187,7 +212,9 @@ def test_full_pipeline_preserves_industry_isolation(
     for issue in result["issues"]:
         assert issue.evidence
 
-        evidence_ids = {item.external_id for item in issue.evidence}
+        evidence_ids = {
+            item.external_id for item in issue.evidence
+        }
         assert evidence_ids <= expected_evidence_ids
         issue_evidence_ids.update(evidence_ids)
 
@@ -204,7 +231,9 @@ def test_full_pipeline_preserves_industry_isolation(
         assert opportunity.evidence
 
         dimension_id = opportunity.transformation_dimension.external_id
-        evidence_ids = {item.external_id for item in opportunity.evidence}
+        evidence_ids = {
+            item.external_id for item in opportunity.evidence
+        }
 
         assert dimension_id in expected_dimension_ids
         assert evidence_ids <= expected_evidence_ids
@@ -215,16 +244,19 @@ def test_full_pipeline_preserves_industry_isolation(
     assert opportunity_dimension_ids == expected_dimension_ids
     assert opportunity_evidence_ids == expected_evidence_ids
 
-    # Initiatives must be linked to the generated opportunities and retain evidence context.
+    # Initiatives must link to generated opportunities and retain evidence.
     assert result["initiatives"]
 
-    opportunity_ids = {item.id for item in result["opportunities"]}
+    opportunity_ids = {
+        item.id for item in result["opportunities"]
+    }
 
     for initiative in result["initiatives"]:
         assert initiative.opportunity_id in opportunity_ids
 
         linked_opportunity = next(
-            item for item in result["opportunities"]
+            item
+            for item in result["opportunities"]
             if item.id == initiative.opportunity_id
         )
 
@@ -247,20 +279,23 @@ def test_unknown_industry_with_no_universal_data_produces_no_recommendations(
         challenges=[],
         goals=[],
         processes=[],
+        # technologies=[],
         technology=[],
         constraints=[],
     )
     db.add(organisation)
 
     add_evidence(db, "FIN-ONLY-E1", ["FinTech"], "FRAUD")
-    add_dimension(db, "FIN-ONLY-D1", "Fraud Risk", ["FinTech"], "FRAUD")
+    add_dimension(
+        db, "FIN-ONLY-D1", "Fraud Risk", ["FinTech"], "FRAUD"
+    )
     db.commit()
 
-    result = intelligence_service.run_intelligence_analysis(db, organisation)
+    result = intelligence_service.run_intelligence_analysis(
+        db, organisation
+    )
 
     assert result["issues"] == []
     assert result["opportunities"] == []
     assert result["initiatives"] == []
-
-    # The analysis run can complete even when no applicable recommendations exist.
     assert result["analysis_run"].status == "completed"

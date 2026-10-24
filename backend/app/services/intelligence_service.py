@@ -1,29 +1,70 @@
-"""Industry-aware, evidence-driven strategic intelligence pipeline.
+from __future__ import annotations
 
-The seed data determines which dimensions and candidate initiatives apply to an
-industry. Evidence is strictly filtered by its industries metadata. No LLM output
-or external fact is treated as evidence, and opportunity ranking stays deterministic.
-"""
+import logging
 from statistics import mean
+from typing import Any
+
 from sqlalchemy.orm import Session
 
 from app.models import (
-    Organisation, StrategicIssue, Opportunity, TransformationDimension,
-    Initiative, AnalysisRun, Evidence,
+    AnalysisRun,
+    Evidence,
+    Initiative,
+    Opportunity,
+    Organisation,
+    StrategicIssue,
+    TransformationDimension,
 )
 from app.ai.issue_analyser import analyse_dimension
 from app.ai.opportunity_generator import generate_opportunity
 from app.services.industry_selection import (
     filter_evidence_for_industry,
-    normalise_industry,
     select_applicable_dimensions,
 )
 from app.services.prioritisation_service import calculate_and_rank_opportunities
 
+logger = logging.getLogger(__name__)
+
 ANALYSIS_VERSION = "2.0-evidence-driven"
+MODEL_USED = "deterministic-evidence-engine"
 
 
-def get_dimension_by_external_id(db: Session, external_id: str):
+def _get(value: Any, key: str, default: Any = None) -> Any:
+    """Read a field from either a dictionary or an object."""
+    if isinstance(value, dict):
+        return value.get(key, default)
+    return getattr(value, key, default)
+
+
+def _text(value: Any, default: str = "") -> str:
+    if value is None:
+        return default
+    return str(value).strip()
+
+
+def _number(value: Any, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _evidence_ids(records: list[Evidence]) -> set[int]:
+    return {record.id for record in records if record.id is not None}
+
+
+def _evidence_external_ids(records: list[Evidence]) -> set[str]:
+    return {
+        str(record.external_id)
+        for record in records
+        if record.external_id is not None
+    }
+
+
+def get_dimension_by_external_id(
+    db: Session,
+    external_id: str,
+) -> TransformationDimension | None:
     return (
         db.query(TransformationDimension)
         .filter(TransformationDimension.external_id == external_id)
@@ -31,22 +72,32 @@ def get_dimension_by_external_id(db: Session, external_id: str):
     )
 
 
-def get_industry_evidence(db: Session, organisation: Organisation):
-    """Return only evidence explicitly tagged for the organisation's industry."""
-    all_records = db.query(Evidence).order_by(Evidence.id).all()
-    return filter_evidence_for_industry(all_records, organisation.industry)
+def get_industry_evidence(
+    db: Session,
+    organisation: Organisation,
+) -> list[Evidence]:
+    """Return only evidence applicable to this organisation's industry."""
+    records = db.query(Evidence).order_by(Evidence.id).all()
+    return filter_evidence_for_industry(records, organisation.industry)
 
 
-def get_applicable_dimensions(db: Session, organisation: Organisation):
-    dimensions = db.query(TransformationDimension).order_by(
-        TransformationDimension.external_id
-    ).all()
+def get_applicable_dimensions(
+    db: Session,
+    organisation: Organisation,
+) -> list[TransformationDimension]:
+    """Return dimensions applicable to the organisation's industry."""
+    dimensions = (
+        db.query(TransformationDimension)
+        .order_by(TransformationDimension.external_id)
+        .all()
+    )
     return select_applicable_dimensions(dimensions, organisation.industry)
 
 
-def _evidence_for_dimension(evidence_records, dimension):
-    """Return evidence matching a dimension's declared research domains."""
-
+def _evidence_for_dimension(
+    evidence_records: list[Evidence],
+    dimension: TransformationDimension,
+) -> list[Evidence]:
     allowed_domains = {
         str(value).strip().casefold()
         for value in (dimension.evidence_domains or [])
@@ -62,144 +113,308 @@ def _evidence_for_dimension(evidence_records, dimension):
         if (record.domain or "").strip().casefold() in allowed_domains
     ]
 
-def create_analysis_run(db: Session, organisation: Organisation):
-    run = AnalysisRun(
+
+def create_analysis_run(
+    db: Session,
+    organisation: Organisation,
+) -> AnalysisRun:
+    analysis_run = AnalysisRun(
         organisation_id=organisation.id,
-        model_used="deterministic-evidence-engine",
+        model_used=MODEL_USED,
         analysis_version=ANALYSIS_VERSION,
         status="running",
     )
-    db.add(run)
+    db.add(analysis_run)
     db.flush()
-    return run
+    return analysis_run
 
 
-def create_strategic_issues(db: Session, organisation: Organisation):
-    created_issues = []
-    industry_evidence = get_industry_evidence(db, organisation)
+def _find_existing_issue(
+    db: Session,
+    organisation_id: int,
+    title: str,
+) -> StrategicIssue | None:
+    return (
+        db.query(StrategicIssue)
+        .filter(
+            StrategicIssue.organisation_id == organisation_id,
+            StrategicIssue.title == title,
+        )
+        .first()
+    )
+
+
+def _find_existing_opportunity(
+    db: Session,
+    organisation_id: int,
+    title: str,
+) -> Opportunity | None:
+    return (
+        db.query(Opportunity)
+        .filter(
+            Opportunity.organisation_id == organisation_id,
+            Opportunity.title == title,
+        )
+        .first()
+    )
+
+
+def _attach_evidence(
+    target: Any,
+    evidence_records: list[Evidence],
+) -> None:
+    """Attach evidence only when the target exposes an evidence relationship."""
+    if hasattr(target, "evidence"):
+        target.evidence = list(evidence_records)
+
+
+def create_strategic_issues(
+    db: Session,
+    organisation: Organisation,
+) -> list[StrategicIssue]:
+    evidence_records = get_industry_evidence(db, organisation)
     dimensions = get_applicable_dimensions(db, organisation)
 
+    issues: list[StrategicIssue] = []
+
     for dimension in dimensions:
-        evidence = _evidence_for_dimension(industry_evidence, dimension)
-        if not evidence:
-            # No relevant, industry-tagged evidence means no recommendation.
+        dimension_evidence = _evidence_for_dimension(
+            evidence_records,
+            dimension,
+        )
+
+        # Never generate an issue without relevant, industry-filtered evidence.
+        if not dimension_evidence:
             continue
 
-        issue_data = analyse_dimension(dimension, evidence, organisation)
-        existing = (
-            db.query(StrategicIssue)
-            .filter(
-                StrategicIssue.organisation_id == organisation.id,
-                StrategicIssue.title == issue_data["title"],
+        generated = analyse_dimension(
+            dimension,
+            dimension_evidence,
+            organisation,
+        )
+
+        if not generated:
+            continue
+
+        title = _text(_get(generated, "title"))
+        if not title:
+            logger.warning(
+                "Skipping generated issue without a title for dimension %s",
+                dimension.external_id,
             )
-            .first()
-        )
-        if existing:
-            existing.description = issue_data["description"]
-            existing.rationale = issue_data["rationale"]
-            existing.severity = issue_data["severity"]
-            existing.urgency = issue_data["urgency"]
-            existing.evidence = evidence
-            existing.model_used = "deterministic-evidence-engine"
-            existing.analysis_version = ANALYSIS_VERSION
-            created_issues.append(existing)
             continue
 
-        issue = StrategicIssue(
-            organisation_id=organisation.id,
-            title=issue_data["title"],
-            description=issue_data["description"],
-            rationale=issue_data["rationale"],
-            severity=issue_data["severity"],
-            urgency=issue_data["urgency"],
-            model_used="deterministic-evidence-engine",
-            analysis_version=ANALYSIS_VERSION,
+        issue = _find_existing_issue(db, organisation.id, title)
+
+        if issue is None:
+            issue = StrategicIssue(
+                organisation_id=organisation.id,
+                title=title,
+            )
+            db.add(issue)
+
+        issue.description = _text(_get(generated, "description"))
+        issue.rationale = _text(_get(generated, "rationale"))
+        issue.severity = _text(_get(generated, "severity"), "medium")
+        issue.urgency = _number(_get(generated, "urgency"))
+        issue.model_used = _text(
+            _get(generated, "model_used"),
+            MODEL_USED,
         )
-        issue.evidence = evidence
-        db.add(issue)
+        issue.analysis_version = ANALYSIS_VERSION
+        _attach_evidence(issue, dimension_evidence)
+
         db.flush()
-        created_issues.append(issue)
+        issues.append(issue)
 
-    # db.commit()
-    return created_issues
+    return issues
 
 
-def create_opportunities(db: Session, organisation: Organisation, issues: list[StrategicIssue]):
-    created_opportunities = []
-    dimensions = {
-        dimension.name: dimension
-        for dimension in get_applicable_dimensions(db, organisation)
+def create_opportunities(
+    db: Session,
+    organisation: Organisation,
+    issues: list[StrategicIssue],
+) -> list[Opportunity]:
+    evidence_records = get_industry_evidence(db, organisation)
+    dimensions = get_applicable_dimensions(db, organisation)
+
+    dimensions_by_name = {
+        dimension.name.casefold(): dimension
+        for dimension in dimensions
+        if getattr(dimension, "name", None)
     }
+    dimensions_by_external_id = {
+        dimension.external_id: dimension
+        for dimension in dimensions
+        if getattr(dimension, "external_id", None)
+    }
+
+    opportunities: list[Opportunity] = []
 
     for issue in issues:
-        dimension = dimensions.get(issue.title)
-        if dimension is None or not issue.evidence:
+        issue_evidence = list(getattr(issue, "evidence", []) or [])
+        if not issue_evidence:
             continue
 
-        opportunity_data = generate_opportunity(dimension, issue, organisation)
-        existing = (
-            db.query(Opportunity)
-            .filter(
-                Opportunity.organisation_id == organisation.id,
-                Opportunity.strategic_issue_id == issue.id,
-                Opportunity.title == opportunity_data["title"],
+        # Resolve the dimension using the issue's explicit dimension metadata
+        # when available; otherwise let the generator determine applicability.
+        dimension = None
+        dimension_external_id = getattr(issue, "transformation_dimension_id", None)
+
+        if dimension_external_id:
+            dimension = dimensions_by_external_id.get(dimension_external_id)
+
+        if dimension is None:
+            dimension_name = _text(
+                getattr(issue, "transformation_dimension", None)
+                and getattr(issue.transformation_dimension, "name", None)
             )
-            .first()
-        )
-        if existing:
-            existing.transformation_dimension_id = dimension.id
-            existing.description = opportunity_data["description"]
-            existing.rationale = opportunity_data["rationale"]
-            existing.business_impact = opportunity_data["business_impact"]
-            existing.feasibility = opportunity_data["feasibility"]
-            existing.urgency = opportunity_data["urgency"]
-            existing.strategic_alignment = opportunity_data["strategic_alignment"]
-            existing.evidence_confidence = opportunity_data["evidence_confidence"]
-            existing.evidence = list(issue.evidence)
-            existing.model_used = "deterministic-evidence-engine"
-            existing.analysis_version = ANALYSIS_VERSION
-            created_opportunities.append(existing)
+            if dimension_name:
+                dimension = dimensions_by_name.get(dimension_name.casefold())
+
+        if dimension is None:
+            # A dimension must be applicable to the organisation's industry.
+            # Match the issue to a dimension only when its evidence domains
+            # overlap with the issue's evidence.
+            issue_domains = {
+                (record.domain or "").strip().casefold()
+                for record in issue_evidence
+            }
+            dimension = next(
+                (
+                    item
+                    for item in dimensions
+                    if issue_domains
+                    & {
+                        str(domain).strip().casefold()
+                        for domain in (item.evidence_domains or [])
+                    }
+                ),
+                None,
+            )
+
+        if dimension is None:
+            logger.info(
+                "Skipping opportunity for issue %s: no applicable dimension",
+                issue.id,
+            )
             continue
 
-        opportunity = Opportunity(
-            organisation_id=organisation.id,
-            strategic_issue_id=issue.id,
-            transformation_dimension_id=dimension.id,
-            title=opportunity_data["title"],
-            description=opportunity_data["description"],
-            rationale=opportunity_data["rationale"],
-            business_impact=opportunity_data["business_impact"],
-            feasibility=opportunity_data["feasibility"],
-            urgency=opportunity_data["urgency"],
-            strategic_alignment=opportunity_data["strategic_alignment"],
-            evidence_confidence=opportunity_data["evidence_confidence"],
-            model_used="deterministic-evidence-engine",
-            analysis_version=ANALYSIS_VERSION,
+        # Re-check evidence against the industry-filtered set and dimension.
+        allowed_ids = _evidence_ids(evidence_records)
+        valid_issue_evidence = [
+            record
+            for record in issue_evidence
+            if record.id in allowed_ids
+        ]
+        dimension_evidence = _evidence_for_dimension(
+            evidence_records,
+            dimension,
         )
-        opportunity.evidence = list(issue.evidence)
-        db.add(opportunity)
+        dimension_evidence_ids = _evidence_ids(dimension_evidence)
+        valid_evidence = [
+            record
+            for record in valid_issue_evidence
+            if record.id in dimension_evidence_ids
+        ]
+
+        if not valid_evidence:
+            continue
+
+        generated = generate_opportunity(
+            dimension,
+            issue,
+            organisation,
+            evidence_records=valid_evidence,
+        )
+        if not generated:
+            continue
+
+        title = _text(_get(generated, "title"))
+        if not title:
+            logger.warning(
+                "Skipping generated opportunity without a title for issue %s",
+                issue.id,
+            )
+            continue
+
+        opportunity = _find_existing_opportunity(
+            db,
+            organisation.id,
+            title,
+        )
+
+        if opportunity is None:
+            opportunity = Opportunity(
+                organisation_id=organisation.id,
+                title=title,
+            )
+            db.add(opportunity)
+
+        opportunity.strategic_issue_id = issue.id
+        opportunity.transformation_dimension_id = dimension.id
+        opportunity.description = _text(_get(generated, "description"))
+        opportunity.rationale = _text(_get(generated, "rationale"))
+        opportunity.business_impact = _number(
+            _get(generated, "business_impact")
+        )
+        opportunity.feasibility = _number(
+            _get(generated, "feasibility")
+        )
+        opportunity.urgency = _number(_get(generated, "urgency"))
+        opportunity.strategic_alignment = _number(
+            _get(generated, "strategic_alignment")
+        )
+        opportunity.evidence_confidence = _number(
+            _get(generated, "evidence_confidence"),
+            _number(
+                mean(
+                    [
+                        _number(getattr(record, "confidence", None), 0.5)
+                        for record in valid_evidence
+                    ]
+                )
+                if valid_evidence
+                else 0.0
+            ),
+        )
+        opportunity.model_used = _text(
+            _get(generated, "model_used"),
+            MODEL_USED,
+        )
+        opportunity.analysis_version = ANALYSIS_VERSION
+        _attach_evidence(opportunity, valid_evidence)
+
         db.flush()
-        created_opportunities.append(opportunity)
+        opportunities.append(opportunity)
 
-    # db.commit()
-    return created_opportunities
+    return opportunities
 
 
-def build_initiative_context(organisation: Organisation, opportunity: Opportunity) -> str:
-    sections = [f"Opportunity: {opportunity.title}"]
-    fields = {
-        "Goals": getattr(organisation, "goals", None) or [],
-        "Challenges": getattr(organisation, "challenges", None) or [],
-        "Processes": getattr(organisation, "processes", None) or [],
-        "Technology": getattr(organisation, "technology", None) or [],
-        "Constraints": getattr(organisation, "constraints", None) or [],
-    }
-    for label, values in fields.items():
-        if values:
-            sections.append(f"{label}: " + "; ".join(str(value) for value in values))
-    evidence_ids = [item.external_id for item in (opportunity.evidence or [])]
-    sections.append("Supporting evidence: " + (", ".join(evidence_ids) if evidence_ids else "none"))
-    return "\n".join(sections)
+def build_initiative_context(
+    organisation: Organisation,
+    opportunity: Opportunity,
+) -> str:
+    evidence = list(getattr(opportunity, "evidence", []) or [])
+    evidence_ids = [
+        record.external_id
+        for record in evidence
+        if getattr(record, "external_id", None)
+    ]
+
+    parts = [
+        f"Organisation: {organisation.name}",
+        f"Industry: {organisation.industry or 'Unknown'}",
+        f"Opportunity: {opportunity.title}",
+        f"Description: {opportunity.description or ''}",
+        f"Goals: {getattr(organisation, 'goals', None) or ''}",
+        f"Challenges: {getattr(organisation, 'challenges', None) or ''}",
+        f"Processes: {getattr(organisation, 'processes', None) or ''}",
+        f"Technology: {getattr(organisation, 'technology', None) or ''}",
+        f"Constraints: {getattr(organisation, 'constraints', None) or ''}",
+        f"Evidence IDs: {', '.join(evidence_ids)}",
+    ]
+    return "\n".join(parts)
 
 
 def create_initiatives(
@@ -207,60 +422,64 @@ def create_initiatives(
     organisation: Organisation,
     opportunities: list[Opportunity],
     analysis_run: AnalysisRun,
-):
-    created_initiatives = []
+) -> list[Initiative]:
+    initiatives: list[Initiative] = []
+
     for opportunity in opportunities:
-        if not opportunity.evidence:
+        if not list(getattr(opportunity, "evidence", []) or []):
             continue
-        name = f"Pilot: {opportunity.title}"
-        existing = (
+
+        initiative_name = f"Pilot: {opportunity.title}"
+        initiative = (
             db.query(Initiative)
             .filter(
                 Initiative.organisation_id == organisation.id,
                 Initiative.opportunity_id == opportunity.id,
-                Initiative.name == name,
+                Initiative.name == initiative_name,
             )
             .first()
         )
+
         context = build_initiative_context(organisation, opportunity)
-        evidence_ids = ", ".join(item.external_id for item in opportunity.evidence)
-        description = (
-            f"Validate the opportunity '{opportunity.title}' using a bounded pilot. "
-            f"The pilot should test feasibility, operational fit, and relevant safeguards.\n{context}"
+
+        if initiative is None:
+            initiative = Initiative(
+                organisation_id=organisation.id,
+                opportunity_id=opportunity.id,
+                name=initiative_name,
+            )
+            db.add(initiative)
+
+        initiative.description = (
+            f"Pilot initiative to validate the opportunity: "
+            f"{opportunity.description or opportunity.title}\n\n"
+            f"Context:\n{context}"
         )
-        expected_outcome = (
-            f"Evidence-based decision on whether to scale '{opportunity.title}', "
-            f"using baseline and post-pilot measures. Supporting evidence: {evidence_ids}."
+        initiative.expected_outcome = (
+            f"Validate the business value of {opportunity.title}."
         )
-        if existing:
-            existing.description = description
-            existing.expected_outcome = expected_outcome
-            existing.model_used = "deterministic-evidence-engine"
-            existing.analysis_version = ANALYSIS_VERSION
-            created_initiatives.append(existing)
-            continue
-
-        initiative = Initiative(
-            organisation_id=organisation.id,
-            opportunity_id=opportunity.id,
-            name=name,
-            description=description,
-            expected_outcome=expected_outcome,
-            success_metric="Define a baseline, then measure the agreed outcome and risk indicators",
-            implementation_phase="Phase 1 - Validate",
-            status="proposed",
-            model_used="deterministic-evidence-engine",
-            analysis_version=ANALYSIS_VERSION,
+        initiative.success_metric = (
+            "Define a baseline, run the pilot, and compare measured "
+            "results against the baseline."
         )
-        db.add(initiative)
-        db.flush()
-        created_initiatives.append(initiative)
+        initiative.implementation_phase = "pilot"
+        initiative.status = "proposed"
+        initiative.model_used = opportunity.model_used or MODEL_USED
+        initiative.analysis_version = ANALYSIS_VERSION
 
-    # db.commit()
-    return created_initiatives
+        initiatives.append(initiative)
+
+    db.flush()
+    return initiatives
 
 
-def run_intelligence_analysis(db: Session, organisation: Organisation):
+def run_intelligence_analysis(
+    db: Session,
+    organisation: Organisation,
+) -> dict[str, Any]:
+    """Run the legacy evidence-driven pipeline for one organisation."""
+    analysis_run: AnalysisRun | None = None
+
     try:
         analysis_run = create_analysis_run(db, organisation)
 
@@ -268,12 +487,17 @@ def run_intelligence_analysis(db: Session, organisation: Organisation):
         for issue in issues:
             issue.analysis_run_id = analysis_run.id
 
+        db.flush()
+
         opportunities = create_opportunities(db, organisation, issues)
         for opportunity in opportunities:
             opportunity.analysis_run_id = analysis_run.id
 
+        db.flush()
+
         ranked_opportunities = calculate_and_rank_opportunities(
-            db, opportunities
+            db,
+            opportunities,
         )
 
         initiatives = create_initiatives(
@@ -283,7 +507,6 @@ def run_intelligence_analysis(db: Session, organisation: Organisation):
             analysis_run,
         )
 
-        # Mark success only after every pipeline stage has completed.
         analysis_run.status = "completed"
         db.commit()
 
@@ -295,22 +518,24 @@ def run_intelligence_analysis(db: Session, organisation: Organisation):
             "initiatives": initiatives,
         }
 
-    except Exception:
-        # Undo all uncommitted changes, including updates to existing records.
+    except Exception as exc:
         db.rollback()
+        logger.exception(
+            "Intelligence analysis failed for organisation %s",
+            organisation.id,
+        )
 
-        # Record the failed run in a separate transaction.
+        # Try to record the failed run without masking the original exception.
         try:
             failed_run = AnalysisRun(
                 organisation_id=organisation.id,
-                model_used="deterministic-evidence-engine",
+                model_used=MODEL_USED,
                 analysis_version=ANALYSIS_VERSION,
                 status="failed",
             )
             db.add(failed_run)
             db.commit()
         except Exception:
-            # Do not let failure-recording errors hide the original exception.
             db.rollback()
 
-        raise
+        raise exc
